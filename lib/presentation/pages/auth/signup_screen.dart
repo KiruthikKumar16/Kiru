@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kiru/core/constants/app_strings.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
+import 'package:kiru/core/routes/app_routes.dart';
 import 'package:kiru/presentation/widgets/app_input_field.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
-import 'package:kiru/presentation/providers/auth_providers.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -35,12 +35,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
-      final authDataSource = ref.read(firebaseAuthDataSourceProvider);
-      await authDataSource.signUpWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-      // On success, navigation will be handled by auth state change
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) {
+        context.go(AppRoutes.styleQuiz);
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -54,9 +52,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
-      final authDataSource = ref.read(firebaseAuthDataSourceProvider);
-      await authDataSource.signInWithGoogle();
-      // On success, navigation will be handled by auth state change
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) {
+        context.go(AppRoutes.styleQuiz);
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -174,10 +173,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 const SizedBox(height: AppSpacing.lg),
                 AppButton(
                   text: AppStrings.loginWithGoogle,
-                  icon: const Icon(
-                    FontAwesomeIcons.google,
-                    size: 20,
-                  ),
                   type: AppButtonType.secondary,
                   onPressed: _signInWithGoogle,
                   isLoading: _isLoading,
@@ -190,7 +185,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       const Text(AppStrings.haveAccount),
                       TextButton(
                         onPressed: () {
-                          // TODO: Navigate back to Login Screen
+                          context.pop();
                         },
                         child: const Text(AppStrings.login),
                       ),

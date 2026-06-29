@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:kiru/core/constants/app_strings.dart';
+import 'package:kiru/core/routes/app_routes.dart';
 import 'package:kiru/presentation/providers/theme_provider.dart';
 
 void main() async {
@@ -19,19 +21,34 @@ class KiruApp extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
     final themeMode = ref.watch(themeModeProvider);
 
-    return MaterialApp(
+    return MaterialApp.router(
       title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
       theme: theme,
       themeMode: themeMode,
-      // TODO: Set up GoRouter
-      home: const SplashScreen(),
+      routerConfig: AppRoutes.router,
     );
   }
 }
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Navigate to Login after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        context.go(AppRoutes.login);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
