@@ -8,8 +8,7 @@ final themeProvider = Provider<ThemeData>((ref) {
   final themeMode = ref.watch(themeModeProvider);
   switch (themeMode) {
     case ThemeMode.dark:
-      // TODO: Add dark theme later
-      return AppTheme.lightTheme;
+      return AppTheme.darkTheme;
     case ThemeMode.light:
     case ThemeMode.system:
       return AppTheme.lightTheme;

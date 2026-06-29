@@ -88,4 +88,16 @@ class AppTheme {
       ),
     );
   }
+
+  static ThemeData get darkTheme {
+    return ThemeData.dark(useMaterial3: true).copyWith(
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.primary,
+        secondary: AppColors.secondary,
+        surface: Color(0xFF1E1E1E),
+        error: AppColors.error,
+      ),
+      scaffoldBackgroundColor: const Color(0xFF121212),
+    );
+  }
 }

@@ -5,7 +5,7 @@ class StyleQuizItem {
   final String category;
   final List<String> tags;
 
-  StyleQuizItem({
+  const StyleQuizItem({
     required this.id,
     required this.imageUrl,
     required this.title,

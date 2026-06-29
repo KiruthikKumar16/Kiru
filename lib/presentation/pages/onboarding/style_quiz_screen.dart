@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_card_swiper/flutter_card_swiper.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kiru/core/constants/app_strings.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
+import 'package:kiru/core/routes/app_routes.dart';
 import 'package:kiru/data/models/style_quiz_item.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
 
@@ -14,59 +17,77 @@ class StyleQuizScreen extends ConsumerStatefulWidget {
 }
 
 class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
+  final CardSwiperController _controller = CardSwiperController();
   int _currentIndex = 0;
+  bool _isFinished = false;
 
   final List<StyleQuizItem> _quizItems = [
-    StyleQuizItem(
+    const StyleQuizItem(
       id: '1',
-      imageUrl: 'https://picsum.photos/600/800?random=1',
-      title: 'Casual Streetwear',
-      category: 'Street',
-      tags: ['casual', 'street', 'urban'],
-    ),
-    StyleQuizItem(
-      id: '2',
-      imageUrl: 'https://picsum.photos/600/800?random=2',
-      title: 'Formal Business',
-      category: 'Formal',
-      tags: ['formal', 'business', 'professional'],
-    ),
-    StyleQuizItem(
-      id: '3',
-      imageUrl: 'https://picsum.photos/600/800?random=3',
-      title: 'Bohemian Summer',
-      category: 'Bohemian',
-      tags: ['boho', 'summer', 'relaxed'],
-    ),
-    StyleQuizItem(
-      id: '4',
-      imageUrl: 'https://picsum.photos/600/800?random=4',
-      title: 'Minimal Elegance',
+      imageUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop',
+      title: 'Milanese Minimal Chic',
       category: 'Minimal',
-      tags: ['minimal', 'clean', 'elegant'],
+      tags: ['chic', 'minimal', 'monochrome'],
     ),
-    StyleQuizItem(
+    const StyleQuizItem(
+      id: '2',
+      imageUrl: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600&auto=format&fit=crop',
+      title: 'Tokyo Streetwear',
+      category: 'Streetwear',
+      tags: ['oversized', 'urban', 'trendy'],
+    ),
+    const StyleQuizItem(
+      id: '3',
+      imageUrl: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600&auto=format&fit=crop',
+      title: 'Bohemian Coastal Sunset',
+      category: 'Bohemian',
+      tags: ['resort', 'breeze', 'floral'],
+    ),
+    const StyleQuizItem(
+      id: '4',
+      imageUrl: 'https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?w=600&auto=format&fit=crop',
+      title: 'Parisian Business Formal',
+      category: 'Formal',
+      tags: ['blazer', 'tailored', 'sleek'],
+    ),
+    const StyleQuizItem(
       id: '5',
-      imageUrl: 'https://picsum.photos/600/800?random=5',
-      title: 'Athleisure Active',
-      category: 'Athleisure',
-      tags: ['athletic', 'comfortable', 'active'],
+      imageUrl: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&auto=format&fit=crop',
+      title: 'Nordic Casual Winter',
+      category: 'Casual',
+      tags: ['cozy', 'knitwear', 'warm'],
+    ),
+    const StyleQuizItem(
+      id: '6',
+      imageUrl: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600&auto=format&fit=crop',
+      title: 'High-Fashion Statement',
+      category: 'High Fashion',
+      tags: ['bold', 'avantgarde', 'editorial'],
+    ),
+    const StyleQuizItem(
+      id: '7',
+      imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop',
+      title: 'Balearic Islands Resortwear',
+      category: 'Resort',
+      tags: ['summer', 'linen', 'relaxing'],
     ),
   ];
 
-  final List<StyleQuizItem> _likedItems = [];
-  final List<StyleQuizItem> _dislikedItems = [];
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
-  void _handleSwipe(bool liked) {
-    final item = _quizItems[_currentIndex];
+  bool _onSwipe(int previousIndex, int? currentIndex, CardSwiperDirection direction) {
     setState(() {
-      if (liked) {
-        _likedItems.add(item);
+      if (currentIndex != null) {
+        _currentIndex = currentIndex;
       } else {
-        _dislikedItems.add(item);
+        _isFinished = true;
       }
-      _currentIndex++;
     });
+    return true;
   }
 
   @override
@@ -77,29 +98,46 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             children: [
-              Text(
-                AppStrings.onboardingTitle,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                textAlign: TextAlign.center,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    AppStrings.onboardingTitle,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  TextButton(
+                    onPressed: () => context.go(AppRoutes.bodyProfile),
+                    child: const Text('Skip'),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 AppStrings.onboardingSubtitle,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.lg),
               Expanded(
-                child: _currentIndex < _quizItems.length
-                    ? _buildQuizCard(_quizItems[_currentIndex])
-                    : _buildCompletedState(),
+                child: _isFinished
+                    ? _buildCompletedState()
+                    : CardSwiper(
+                        controller: _controller,
+                        cardsCount: _quizItems.length,
+                        onSwipe: _onSwipe,
+                        onEnd: () => setState(() => _isFinished = true),
+                        padding: EdgeInsets.zero,
+                        cardBuilder: (context, index, percentX, percentY) {
+                          return _buildQuizCard(_quizItems[index]);
+                        },
+                      ),
               ),
-              const SizedBox(height: AppSpacing.xl),
-              if (_currentIndex < _quizItems.length) _buildActionButtons(),
+              const SizedBox(height: AppSpacing.lg),
+              if (!_isFinished) _buildActionButtons(),
             ],
           ),
         ),
@@ -115,68 +153,72 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppSpacing.radiusXxl),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            Expanded(
-              child: Image.network(
-                item.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    Container(
-                  color: AppColors.surface,
-                  child: const Icon(Icons.image, size: 100),
-                ),
+            Image.network(
+              item.imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: AppColors.surface,
+                child: const Icon(Icons.dry_cleaning, size: 80, color: AppColors.primary),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusSm),
-                        ),
-                        child: Text(
-                          item.category,
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelMedium
-                              ?.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                        ),
-                      ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.8),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    item.title,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleLarge
-                        ?.copyWith(
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.xs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      ),
+                      child: Text(
+                        item.category,
+                        style: const TextStyle(
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
+                          fontSize: 12,
                         ),
-                  ),
-                ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      item.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -190,17 +232,19 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         FloatingActionButton(
-          heroTag: 'dislike',
+          heroTag: 'dislike_btn',
           backgroundColor: Colors.white,
+          elevation: 4,
           shape: const CircleBorder(),
-          onPressed: () => _handleSwipe(false),
+          onPressed: () => _controller.swipe(CardSwiperDirection.left),
           child: const Icon(Icons.close, color: AppColors.error, size: 32),
         ),
         FloatingActionButton(
-          heroTag: 'like',
+          heroTag: 'like_btn',
           backgroundColor: AppColors.primary,
+          elevation: 4,
           shape: const CircleBorder(),
-          onPressed: () => _handleSwipe(true),
+          onPressed: () => _controller.swipe(CardSwiperDirection.right),
           child: const Icon(Icons.favorite, color: Colors.white, size: 32),
         ),
       ],
@@ -212,24 +256,24 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.check_circle, size: 100, color: AppColors.success),
+          const Icon(Icons.stars, size: 90, color: AppColors.primary),
           const SizedBox(height: AppSpacing.xl),
           Text(
-            'All Done!',
-            style: Theme.of(context).textTheme.displayMedium?.copyWith(
+            'Style Profile Calibrated!',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          Text(
-            'You liked ${_likedItems.length} styles!',
-            style: Theme.of(context).textTheme.bodyLarge,
+          const Text(
+            'We analyzed your preferences to tailor personalized AI outfit recommendations.',
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.xxl),
           AppButton(
-            text: 'Continue',
+            text: 'Next: Body Profile',
             onPressed: () {
-              // TODO: Navigate to next onboarding step
+              context.go(AppRoutes.bodyProfile);
             },
           ),
         ],
