@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kiru/core/theme/app_theme.dart';
+// import 'package:firebase_core/firebase_core.dart';
+import 'package:kiru/core/constants/app_strings.dart';
+import 'package:kiru/presentation/providers/theme_provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // TODO: Initialize Firebase
+  // await Firebase.initializeApp();
   // TODO: Initialize Hive/Isar
   runApp(const ProviderScope(child: KiruApp()));
 }
 
-class KiruApp extends StatelessWidget {
+class KiruApp extends ConsumerWidget {
   const KiruApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final themeMode = ref.watch(themeModeProvider);
+
     return MaterialApp(
-      title: 'Kiru',
+      title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
+      theme: theme,
+      themeMode: themeMode,
       // TODO: Set up GoRouter
       home: const SplashScreen(),
     );
@@ -35,14 +41,14 @@ class SplashScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Kiru',
+              AppStrings.appName,
               style: Theme.of(context).textTheme.displayLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
             const SizedBox(height: 8),
             Text(
-              'AI Travel Stylist',
+              AppStrings.appTagline,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ],

@@ -30,6 +30,7 @@ dependencies:
   firebase_storage: ^12.2.0
   firebase_analytics: ^11.3.0
   firebase_messaging: ^15.1.0
+  google_sign_in: ^6.2.2
 
   # HTTP & APIs
   dio: ^5.6.0
@@ -44,6 +45,7 @@ dependencies:
   flutter_svg: ^2.0.10
   shimmer: ^3.0.0
   intl: ^0.19.0
+  flutter_card_swiper: ^7.0.2
 
   # ML Kit (optional, Phase 1+)
   google_mlkit_image_labeling: ^0.12.0
@@ -62,12 +64,3 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
-
-  fonts:
-    - family: Inter
-      fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
-        - asset: assets/fonts/Inter-Medium.ttf
-        - asset: assets/fonts/Inter-SemiBold.ttf
-        - asset: assets/fonts/Inter-Bold.ttf
-          weight: 700
