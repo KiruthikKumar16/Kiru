@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:kiru/core/constants/app_strings.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
@@ -15,10 +14,8 @@ class StyleQuizScreen extends ConsumerStatefulWidget {
 }
 
 class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
-  final CardSwiperController _swiperController = CardSwiperController();
   int _currentIndex = 0;
 
-  // Sample quiz items - later, replace with real data/API
   final List<StyleQuizItem> _quizItems = [
     StyleQuizItem(
       id: '1',
@@ -60,10 +57,16 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
   final List<StyleQuizItem> _likedItems = [];
   final List<StyleQuizItem> _dislikedItems = [];
 
-  @override
-  void dispose() {
-    _swiperController.dispose();
-    super.dispose();
+  void _handleSwipe(bool liked) {
+    final item = _quizItems[_currentIndex];
+    setState(() {
+      if (liked) {
+        _likedItems.add(item);
+      } else {
+        _dislikedItems.add(item);
+      }
+      _currentIndex++;
+    });
   }
 
   @override
@@ -92,32 +95,7 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
               const SizedBox(height: AppSpacing.xl),
               Expanded(
                 child: _currentIndex < _quizItems.length
-                    ? CardSwiper(
-                        controller: _swiperController,
-                        cardsCount: _quizItems.length - _currentIndex,
-                        isDisabled: false,
-                        allowedSwipeDirection:
-                            const AllowedSwipeDirection.only(
-                          right: true,
-                          left: true,
-                        ),
-                        onSwipe: (old, current, direction) {
-                          final item = _quizItems[_currentIndex];
-                          setState(() {
-                            _currentIndex++;
-                            if (direction == CardSwiperDirection.right) {
-                              _likedItems.add(item);
-                            } else if (direction == CardSwiperDirection.left) {
-                              _dislikedItems.add(item);
-                            }
-                          });
-                          return true;
-                        },
-                        cardBuilder: (context, index, _, __) {
-                          final item = _quizItems[_currentIndex + index];
-                          return _buildQuizCard(item);
-                        },
-                      )
+                    ? _buildQuizCard(_quizItems[_currentIndex])
                     : _buildCompletedState(),
               ),
               const SizedBox(height: AppSpacing.xl),
@@ -215,14 +193,14 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
           heroTag: 'dislike',
           backgroundColor: Colors.white,
           shape: const CircleBorder(),
-          onPressed: () => _swiperController.swipe(CardSwiperDirection.left),
+          onPressed: () => _handleSwipe(false),
           child: const Icon(Icons.close, color: AppColors.error, size: 32),
         ),
         FloatingActionButton(
           heroTag: 'like',
           backgroundColor: AppColors.primary,
           shape: const CircleBorder(),
-          onPressed: () => _swiperController.swipe(CardSwiperDirection.right),
+          onPressed: () => _handleSwipe(true),
           child: const Icon(Icons.favorite, color: Colors.white, size: 32),
         ),
       ],
