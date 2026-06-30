@@ -1,18 +1,22 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive/hive.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/routes/app_routes.dart';
+import 'package:kiru/presentation/providers/profile_provider.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
 
-class SkinToneScreen extends StatefulWidget {
+class SkinToneScreen extends ConsumerStatefulWidget {
   const SkinToneScreen({super.key});
 
   @override
-  State<SkinToneScreen> createState() => _SkinToneScreenState();
+  ConsumerState<SkinToneScreen> createState() => _SkinToneScreenState();
 }
 
-class _SkinToneScreenState extends State<SkinToneScreen> {
+class _SkinToneScreenState extends ConsumerState<SkinToneScreen> {
   String _selectedUndertone = 'Warm Undertone';
 
   final List<Map<String, dynamic>> _undertones = [
@@ -34,13 +38,37 @@ class _SkinToneScreenState extends State<SkinToneScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profile = ref.read(userProfileProvider);
+      if (profile?.undertone.isNotEmpty == true) {
+        setState(() => _selectedUndertone = profile!.undertone);
+      }
+    });
+  }
+
+  Future<void> _completeOnboarding() async {
+    await ref.read(userProfileProvider.notifier).updateProfile(undertone: _selectedUndertone);
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final box = Hive.box('settings');
+      await box.put('onboarding_completed_${user.uid}', true);
+    }
+    if (mounted) {
+      context.go(AppRoutes.home);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Color Palette Matching'),
         actions: [
           TextButton(
-            onPressed: () => context.go(AppRoutes.home),
+            onPressed: _completeOnboarding,
             child: const Text('Skip'),
           ),
         ],
@@ -128,7 +156,7 @@ class _SkinToneScreenState extends State<SkinToneScreen> {
               ),
               AppButton(
                 text: 'Complete Onboarding & Start Kiru',
-                onPressed: () => context.go(AppRoutes.home),
+                onPressed: _completeOnboarding,
               ),
             ],
           ),

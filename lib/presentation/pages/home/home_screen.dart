@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/routes/app_routes.dart';
-import 'package:kiru/presentation/providers/app_mock_providers.dart';
+import 'package:kiru/presentation/providers/profile_provider.dart';
+import 'package:kiru/presentation/providers/trip_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -13,6 +14,8 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final trips = ref.watch(tripsProvider);
     final upcomingTrip = trips.isNotEmpty ? trips.first : null;
+    final profile = ref.watch(userProfileProvider);
+    final firstName = profile?.displayName.split(' ').first ?? 'Traveler';
 
     return Scaffold(
       appBar: AppBar(
@@ -45,7 +48,7 @@ class HomeScreen extends ConsumerWidget {
             children: [
               // Welcome header
               Text(
-                'Ready for your next getaway?',
+                'Hello, $firstName!',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),

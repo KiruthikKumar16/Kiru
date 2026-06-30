@@ -7,6 +7,8 @@ import 'package:kiru/core/routes/app_routes.dart';
 import 'package:kiru/presentation/widgets/app_input_field.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
 
+import 'package:kiru/presentation/providers/auth_providers.dart';
+
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -32,10 +34,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
-      // Just simulate login for now
-      await Future.delayed(const Duration(seconds: 1));
+      final authDataSource = ref.read(firebaseAuthDataSourceProvider);
+      await authDataSource.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
       if (mounted) {
-        context.go(AppRoutes.styleQuiz);
+        context.go(AppRoutes.home);
       }
     } catch (e) {
       if (!mounted) return;
@@ -47,13 +52,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _forgotPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter your email first')),
+      );
+      return;
+    }
+    try {
+      await ref.read(firebaseAuthDataSourceProvider).sendPasswordResetEmail(email);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password reset email sent')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
+  }
+
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
-      // Just simulate login for now
-      await Future.delayed(const Duration(seconds: 1));
-      if (mounted) {
-        context.go(AppRoutes.styleQuiz);
+      final authDataSource = ref.read(firebaseAuthDataSourceProvider);
+      final userCredential = await authDataSource.signInWithGoogle();
+      if (userCredential != null && mounted) {
+        context.go(AppRoutes.home);
       }
     } catch (e) {
       if (!mounted) return;
@@ -130,7 +157,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: _forgotPassword,
                     child: const Text(AppStrings.forgotPassword),
                   ),
                 ),

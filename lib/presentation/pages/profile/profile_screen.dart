@@ -4,7 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/routes/app_routes.dart';
+import 'package:kiru/presentation/providers/app_mock_providers.dart';
+import 'package:kiru/presentation/providers/auth_providers.dart';
+import 'package:kiru/presentation/providers/profile_provider.dart';
 import 'package:kiru/presentation/providers/theme_provider.dart';
+import 'package:kiru/presentation/providers/trip_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -12,6 +16,9 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
+    final profile = ref.watch(userProfileProvider);
+    final trips = ref.watch(tripsProvider);
+    final wardrobe = ref.watch(wardrobeItemsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -28,24 +35,37 @@ class ProfileScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             children: [
-              // Profile Card
               Center(
                 child: Column(
                   children: [
-                    const CircleAvatar(
+                    CircleAvatar(
                       radius: 45,
-                      backgroundImage: NetworkImage('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop'),
+                      backgroundImage: NetworkImage(
+                        profile?.photoUrl ??
+                            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop',
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    const Text('Elena Rostova', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text(
+                      profile?.displayName ?? 'User',
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 4),
-                    const Text('@elena_travels • Minimalist Adventurer', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                    Text(
+                      '@${profile?.username ?? 'username'} • ${profile?.bio ?? ''}',
+                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                    ),
+                    if (profile != null && profile.bodyShape.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        '${profile.bodyShape} • ${profile.undertone}',
+                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                      ),
+                    ],
                   ],
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
-
-              // Stats Row
               InkWell(
                 onTap: () => context.push(AppRoutes.followersList),
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
@@ -59,16 +79,14 @@ class ProfileScreen extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildStatCol('Trips', '8'),
-                      _buildStatCol('Wardrobe', '24'),
-                      _buildStatCol('Followers', '142'),
+                      _buildStatCol('Trips', '${trips.length}'),
+                      _buildStatCol('Wardrobe', '${wardrobe.length}'),
+                      _buildStatCol('Styles', '${profile?.stylePreferences.length ?? 0}'),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
-
-              // Settings Options
               ListTile(
                 leading: const Icon(Icons.stars_outlined, color: AppColors.primary),
                 title: const Text('Kiru Pro Premium Tier'),
@@ -82,9 +100,10 @@ class ProfileScreen extends ConsumerWidget {
                 title: const Text('Dark Theme Mode'),
                 trailing: Switch(
                   value: themeMode == ThemeMode.dark,
-                  activeColor: AppColors.primary,
+                  activeThumbColor: AppColors.primary,
                   onChanged: (val) {
-                    ref.read(themeModeProvider.notifier).state = val ? ThemeMode.dark : ThemeMode.light;
+                    ref.read(themeModeProvider.notifier).state =
+                        val ? ThemeMode.dark : ThemeMode.light;
                   },
                 ),
               ),
@@ -93,14 +112,26 @@ class ProfileScreen extends ConsumerWidget {
                 leading: const Icon(Icons.shield_outlined, color: AppColors.primary),
                 title: const Text('Cultural Sensitivity Filter'),
                 subtitle: const Text('Alerts for destination dress codes'),
-                trailing: Switch(value: true, activeColor: AppColors.primary, onChanged: (v) {}),
+                trailing: Switch(
+                  value: profile?.culturalSensitivity ?? true,
+                  activeThumbColor: AppColors.primary,
+                  onChanged: (v) {
+                    ref.read(userProfileProvider.notifier).updateProfile(culturalSensitivity: v);
+                  },
+                ),
               ),
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.checkroom_outlined, color: AppColors.primary),
                 title: const Text('Modest Fashion Mode'),
                 subtitle: const Text('Prioritizes high-coverage pairings'),
-                trailing: Switch(value: false, activeColor: AppColors.primary, onChanged: (v) {}),
+                trailing: Switch(
+                  value: profile?.modestFashion ?? false,
+                  activeThumbColor: AppColors.primary,
+                  onChanged: (v) {
+                    ref.read(userProfileProvider.notifier).updateProfile(modestFashion: v);
+                  },
+                ),
               ),
               const Divider(),
               ListTile(
@@ -115,6 +146,15 @@ class ProfileScreen extends ConsumerWidget {
                 title: const Text('Help & Support FAQs'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.push(AppRoutes.helpSupport),
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.logout, color: AppColors.error),
+                title: const Text('Sign Out', style: TextStyle(color: AppColors.error)),
+                onTap: () async {
+                  await ref.read(firebaseAuthDataSourceProvider).signOut();
+                  if (context.mounted) context.go(AppRoutes.welcome);
+                },
               ),
             ],
           ),

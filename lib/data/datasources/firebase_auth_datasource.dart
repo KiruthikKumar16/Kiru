@@ -1,9 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class FirebaseAuthDataSource {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: kIsWeb
+        ? '586089510037-h0grarf55jlmk5lcm1l1s5kpshfae0ul.apps.googleusercontent.com'
+        : null,
+  );
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
@@ -47,5 +52,9 @@ class FirebaseAuthDataSource {
   Future<void> signOut() async {
     await _auth.signOut();
     await _googleSignIn.signOut();
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
   }
 }

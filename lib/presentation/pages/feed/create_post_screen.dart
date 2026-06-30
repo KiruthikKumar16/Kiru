@@ -1,18 +1,23 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
+import 'package:kiru/data/models/social_post.dart';
+import 'package:kiru/presentation/providers/app_mock_providers.dart';
+import 'package:kiru/presentation/providers/profile_provider.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
 import 'package:kiru/presentation/widgets/app_input_field.dart';
 
-class CreatePostScreen extends StatefulWidget {
+class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key});
 
   @override
-  State<CreatePostScreen> createState() => _CreatePostScreenState();
+  ConsumerState<CreatePostScreen> createState() => _CreatePostScreenState();
 }
 
-class _CreatePostScreenState extends State<CreatePostScreen> {
+class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   final _captionController = TextEditingController();
   bool _isVote = false;
 
@@ -20,6 +25,37 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   void dispose() {
     _captionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _publish() async {
+    if (_captionController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please add a caption')),
+      );
+      return;
+    }
+
+    final profile = ref.read(userProfileProvider);
+    final user = FirebaseAuth.instance.currentUser;
+
+    final post = SocialPost(
+      id: 'sp_${DateTime.now().millisecondsSinceEpoch}',
+      authorName: profile?.displayName ?? user?.displayName ?? 'You',
+      authorAvatar: profile?.photoUrl ??
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop',
+      imageUrl:
+          'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop',
+      caption: _captionController.text.trim(),
+      destination: 'Your Trip',
+      likes: 0,
+      comments: 0,
+      isVote: _isVote,
+      optionA: _isVote ? 'Option A' : null,
+      optionB: _isVote ? 'Option B' : null,
+    );
+
+    await ref.read(socialFeedProvider.notifier).addPost(post);
+    if (mounted) context.pop();
   }
 
   @override
@@ -45,7 +81,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   children: [
                     Icon(Icons.add_photo_alternate_outlined, size: 40, color: AppColors.primary),
                     SizedBox(height: 8),
-                    Text('Select outfit photo or trip look to post', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    Text('Select outfit photo or trip look to post',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   ],
                 ),
               ),
@@ -61,13 +98,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 title: const Text('Post as Outfit Vote (2 Options)', style: TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: const Text('Let the community help you choose what to wear on your trip.'),
                 value: _isVote,
-                activeColor: AppColors.primary,
+                activeThumbColor: AppColors.primary,
                 onChanged: (v) => setState(() => _isVote = v),
               ),
               const SizedBox(height: AppSpacing.xl),
               AppButton(
                 text: 'Publish Post to Community',
-                onPressed: () => context.pop(),
+                onPressed: _publish,
               ),
             ],
           ),

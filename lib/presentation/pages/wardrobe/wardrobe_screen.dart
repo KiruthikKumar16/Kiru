@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -33,10 +34,24 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
         ? items
         : items.where((item) => item.category == _selectedCategory).toList();
 
+    final totalCost = items.fold<double>(0, (sum, i) => sum + i.cost);
+    final totalWears = items.fold<int>(0, (sum, i) => sum + i.wearCount);
+    final cpw = totalWears > 0 ? (totalCost / totalWears).toStringAsFixed(2) : '—';
+    final topColor = items.isEmpty
+        ? '—'
+        : items.map((i) => i.color).fold<Map<String, int>>({}, (map, c) {
+            map[c] = (map[c] ?? 0) + 1;
+            return map;
+          }).entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Virtual Wardrobe', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.analytics_outlined, color: AppColors.primary),
+            onPressed: () => context.push(AppRoutes.wardrobeAnalytics),
+          ),
           IconButton(
             icon: const Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
             onPressed: () => context.push(AppRoutes.addWardrobe),
@@ -59,8 +74,8 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildStatCol('Total Items', '${items.length}'),
-                    _buildStatCol('Cost-per-Wear', '\$4.20'),
-                    _buildStatCol('Top Color', 'White / Beige'),
+                    _buildStatCol('Cost-per-Wear', '\$$cpw'),
+                    _buildStatCol('Top Color', topColor),
                   ],
                 ),
               ),
@@ -104,43 +119,52 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                 itemCount: filteredItems.length,
                 itemBuilder: (context, index) {
                   final item = filteredItems[index];
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusLg)),
-                            child: Image.network(
-                              item.imageUrl,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
+                  return GestureDetector(
+                    onTap: () => context.push('/wardrobe/${item.id}'),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusLg)),
+                              child: item.imageUrl.startsWith('http')
+                                  ? Image.network(
+                                      item.imageUrl,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.file(
+                                      File(item.imageUrl),
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
                             ),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(AppSpacing.md),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
-                              const SizedBox(height: 2),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(item.category, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                                  Text('Worn ${item.wearCount}x', style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                            ],
+                          Padding(
+                            padding: const EdgeInsets.all(AppSpacing.md),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                const SizedBox(height: 2),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(item.category, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                    Text('Worn ${item.wearCount}x', style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },

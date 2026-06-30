@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive/hive.dart';
+import 'package:kiru/core/routes/auth_refresh_notifier.dart';
 import 'package:kiru/main.dart';
 import 'package:kiru/presentation/pages/auth/welcome_screen.dart';
 import 'package:kiru/presentation/pages/auth/login_screen.dart';
@@ -66,8 +68,43 @@ class AppRoutes {
   static const premiumSubscription = '/profile/premium';
   static const helpSupport = '/profile/help';
 
+  static final _authRefresh = AuthRefreshNotifier();
+
   static final router = GoRouter(
     initialLocation: splash,
+    refreshListenable: _authRefresh,
+    redirect: (context, state) {
+      final user = FirebaseAuth.instance.currentUser;
+      final loggedIn = user != null;
+      final loggingIn = state.matchedLocation == login ||
+          state.matchedLocation == signup ||
+          state.matchedLocation == welcome ||
+          state.matchedLocation == splash;
+
+      if (!loggedIn) {
+        return loggingIn ? null : welcome;
+      }
+
+      // User is logged in
+      final box = Hive.box('settings');
+      final hasCompletedOnboarding = box.get('onboarding_completed_${user.uid}', defaultValue: false) as bool;
+
+      if (!hasCompletedOnboarding) {
+        final isOnboarding = state.matchedLocation == styleQuiz ||
+            state.matchedLocation == bodyProfile ||
+            state.matchedLocation == skinTone;
+        return isOnboarding ? null : styleQuiz;
+      }
+
+      if (loggingIn ||
+          state.matchedLocation == styleQuiz ||
+          state.matchedLocation == bodyProfile ||
+          state.matchedLocation == skinTone) {
+        return home;
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(path: splash, builder: (context, state) => const SplashScreen()),
       GoRoute(path: welcome, builder: (context, state) => const WelcomeScreen()),

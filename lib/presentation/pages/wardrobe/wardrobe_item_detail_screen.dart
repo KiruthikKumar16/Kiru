@@ -1,20 +1,40 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
+import 'package:kiru/presentation/providers/app_mock_providers.dart';
 
-class WardrobeItemDetailScreen extends StatelessWidget {
+class WardrobeItemDetailScreen extends ConsumerWidget {
   final String itemId;
 
   const WardrobeItemDetailScreen({super.key, required this.itemId});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = ref.watch(wardrobeItemsProvider);
+    final item = items.firstWhere(
+      (i) => i.id == itemId,
+      orElse: () => items.first,
+    );
+
+    final isLocalFile = !item.imageUrl.startsWith('http');
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Item Details', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
-          IconButton(icon: const Icon(Icons.delete_outline, color: AppColors.error), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: AppColors.error),
+            onPressed: () async {
+              await ref.read(wardrobeItemsProvider.notifier).removeItem(item.id);
+              if (context.mounted) {
+                context.pop();
+              }
+            },
+          ),
         ],
       ),
       body: SafeArea(
@@ -25,17 +45,24 @@ class WardrobeItemDetailScreen extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                child: Image.network(
-                  'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop',
-                  height: 280,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
+                child: isLocalFile
+                    ? Image.file(
+                        File(item.imageUrl),
+                        height: 280,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.network(
+                        item.imageUrl,
+                        height: 280,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              const Text('Linen Vacation Shirt', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              Text(item.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
-              const Text('Category: Tops • Color: White • Season: Summer', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              Text('Category: ${item.category} • Color: ${item.color} • Season: ${item.season}', style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
               const SizedBox(height: AppSpacing.xl),
 
               Container(
@@ -47,9 +74,9 @@ class WardrobeItemDetailScreen extends StatelessWidget {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: const [
-                    Column(children: [Text('12x', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary)), Text('Times Worn', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))]),
-                    Column(children: [Text('\$3.75', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary)), Text('Cost-per-Wear', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))]),
+                  children: [
+                    Column(children: [Text('${item.wearCount}x', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary)), const Text('Times Worn', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))]),
+                    Column(children: [Text('\$${(item.cost / (item.wearCount > 0 ? item.wearCount : 1)).toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary)), const Text('Cost-per-Wear', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))]),
                   ],
                 ),
               ),

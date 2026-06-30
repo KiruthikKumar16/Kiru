@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
 

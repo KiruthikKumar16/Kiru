@@ -7,6 +7,7 @@ import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/routes/app_routes.dart';
 import 'package:kiru/data/models/style_quiz_item.dart';
+import 'package:kiru/presentation/providers/profile_provider.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
 
 class StyleQuizScreen extends ConsumerStatefulWidget {
@@ -18,7 +19,7 @@ class StyleQuizScreen extends ConsumerStatefulWidget {
 
 class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
   final CardSwiperController _controller = CardSwiperController();
-  int _currentIndex = 0;
+  final List<String> _likedStyles = [];
   bool _isFinished = false;
 
   final List<StyleQuizItem> _quizItems = [
@@ -80,14 +81,22 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
   }
 
   bool _onSwipe(int previousIndex, int? currentIndex, CardSwiperDirection direction) {
+    if (direction == CardSwiperDirection.right && previousIndex < _quizItems.length) {
+      _likedStyles.add(_quizItems[previousIndex].category);
+    }
     setState(() {
-      if (currentIndex != null) {
-        _currentIndex = currentIndex;
-      } else {
-        _isFinished = true;
-      }
+      if (currentIndex == null) _isFinished = true;
     });
     return true;
+  }
+
+  Future<void> _saveAndContinue() async {
+    if (_likedStyles.isNotEmpty) {
+      await ref.read(userProfileProvider.notifier).updateProfile(
+            stylePreferences: _likedStyles.toSet().toList(),
+          );
+    }
+    if (mounted) context.go(AppRoutes.bodyProfile);
   }
 
   @override
@@ -108,7 +117,7 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
                         ),
                   ),
                   TextButton(
-                    onPressed: () => context.go(AppRoutes.bodyProfile),
+                    onPressed: _saveAndContinue,
                     child: const Text('Skip'),
                   ),
                 ],
@@ -265,16 +274,16 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
                 ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          const Text(
-            'We analyzed your preferences to tailor personalized AI outfit recommendations.',
+          Text(
+            _likedStyles.isEmpty
+                ? 'We analyzed your preferences to tailor personalized AI outfit recommendations.'
+                : 'You love: ${_likedStyles.toSet().join(', ')}',
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.xxl),
           AppButton(
             text: 'Next: Body Profile',
-            onPressed: () {
-              context.go(AppRoutes.bodyProfile);
-            },
+            onPressed: _saveAndContinue,
           ),
         ],
       ),

@@ -172,8 +172,21 @@ class FeedScreen extends ConsumerWidget {
                 );
               },
             ),
-            const Center(
-              child: Text('Discover Paris, Tokyo & Bali outfit feeds...'),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.explore_outlined, size: 64, color: AppColors.primary),
+                  const SizedBox(height: AppSpacing.md),
+                  const Text('Discover destination outfit feeds'),
+                  const SizedBox(height: AppSpacing.lg),
+                  FilledButton.icon(
+                    onPressed: () => context.push(AppRoutes.discover),
+                    icon: const Icon(Icons.travel_explore),
+                    label: const Text('Browse Destinations'),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

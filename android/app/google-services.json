@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "586089510037",
+    "project_id": "kiru-16",
+    "storage_bucket": "kiru-16.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:586089510037:android:abc18f2d86f8c328ba179c",
+        "android_client_info": {
+          "package_name": "com.example.kiru"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "586089510037-9l08gk0d1g0gdokap0c2b44701r7ju88.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZoKOtff7RH_dTfrc9T_ujzr95uu9swZs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "586089510037-9l08gk0d1g0gdokap0c2b44701r7ju88.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

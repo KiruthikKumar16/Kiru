@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
 import 'package:kiru/presentation/widgets/app_input_field.dart';
+import 'package:kiru/presentation/providers/profile_provider.dart';
 
-class EditProfileScreen extends StatefulWidget {
+class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
 
   @override
-  State<EditProfileScreen> createState() => _EditProfileScreenState();
+  ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends State<EditProfileScreen> {
-  final _nameController = TextEditingController(text: 'Elena Rostova');
-  final _usernameController = TextEditingController(text: 'elena_travels');
-  final _bioController = TextEditingController(text: 'Minimalist Adventurer • Exploring Mediterranean & Asia');
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _usernameController;
+  late final TextEditingController _bioController;
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = ref.read(userProfileProvider);
+    _nameController = TextEditingController(text: profile?.displayName ?? '');
+    _usernameController = TextEditingController(text: profile?.username ?? '');
+    _bioController = TextEditingController(text: profile?.bio ?? '');
+  }
 
   @override
   void dispose() {
@@ -24,8 +35,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
+  Future<void> _saveChanges() async {
+    await ref.read(userProfileProvider.notifier).updateProfile(
+      displayName: _nameController.text.trim(),
+      username: _usernameController.text.trim(),
+      bio: _bioController.text.trim(),
+    );
+    if (mounted) {
+      context.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final profile = ref.watch(userProfileProvider);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.bold))),
       body: SafeArea(
@@ -33,9 +57,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 40,
-                backgroundImage: NetworkImage('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop'),
+                backgroundImage: NetworkImage(profile?.photoUrl ?? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop'),
               ),
               const SizedBox(height: AppSpacing.lg),
               AppInputField(controller: _nameController, labelText: 'Display Name'),
@@ -44,7 +68,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: AppSpacing.md),
               AppInputField(controller: _bioController, labelText: 'Bio / Travel Persona'),
               const SizedBox(height: AppSpacing.xl),
-              AppButton(text: 'Save Changes', onPressed: () => context.pop()),
+              AppButton(text: 'Save Changes', onPressed: _saveChanges),
             ],
           ),
         ),

@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/routes/app_routes.dart';
+import 'package:kiru/presentation/providers/profile_provider.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
 
-class BodyProfileScreen extends StatefulWidget {
+class BodyProfileScreen extends ConsumerStatefulWidget {
   const BodyProfileScreen({super.key});
 
   @override
-  State<BodyProfileScreen> createState() => _BodyProfileScreenState();
+  ConsumerState<BodyProfileScreen> createState() => _BodyProfileScreenState();
 }
 
-class _BodyProfileScreenState extends State<BodyProfileScreen> {
+class _BodyProfileScreenState extends ConsumerState<BodyProfileScreen> {
   String _selectedBodyType = 'Hourglass';
 
   final List<Map<String, String>> _bodyTypes = [
@@ -24,13 +26,29 @@ class _BodyProfileScreenState extends State<BodyProfileScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profile = ref.read(userProfileProvider);
+      if (profile?.bodyShape.isNotEmpty == true) {
+        setState(() => _selectedBodyType = profile!.bodyShape);
+      }
+    });
+  }
+
+  Future<void> _continue() async {
+    await ref.read(userProfileProvider.notifier).updateProfile(bodyShape: _selectedBodyType);
+    if (mounted) context.go(AppRoutes.skinTone);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Body Profile'),
         actions: [
           TextButton(
-            onPressed: () => context.go(AppRoutes.skinTone),
+            onPressed: _continue,
             child: const Text('Skip'),
           ),
         ],
@@ -115,7 +133,7 @@ class _BodyProfileScreenState extends State<BodyProfileScreen> {
               ),
               AppButton(
                 text: 'Next: Skin Tone Detection',
-                onPressed: () => context.go(AppRoutes.skinTone),
+                onPressed: _continue,
               ),
             ],
           ),

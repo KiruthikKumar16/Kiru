@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/routes/app_routes.dart';
-import 'package:kiru/presentation/providers/app_mock_providers.dart';
+import 'package:kiru/presentation/providers/trip_provider.dart';
 import 'package:intl/intl.dart';
 
 class TripsScreen extends ConsumerWidget {
@@ -30,7 +30,12 @@ class TripsScreen extends ConsumerWidget {
           itemCount: trips.length,
           itemBuilder: (context, index) {
             final trip = trips[index];
-            final dateStr = '${DateFormat('MMM d').format(trip.startDate)} - ${DateFormat('MMM d, yyyy').format(trip.endDate)}';
+            final dateStr = trip.hideDates
+                ? 'Dates Hidden (Private)'
+                : '${DateFormat('MMM d').format(trip.startDate)} - ${DateFormat('MMM d, yyyy').format(trip.endDate)}';
+            final destStr = trip.hideLocation
+                ? 'Hidden Location, ${trip.country}'
+                : '${trip.destination}, ${trip.country}';
 
             return Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.lg),
@@ -63,9 +68,23 @@ class TripsScreen extends ConsumerWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  '${trip.destination}, ${trip.country}',
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          destStr,
+                                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      if (trip.isPrivate) ...[
+                                        const SizedBox(width: 6),
+                                        const Icon(Icons.lock_outline, size: 16, color: AppColors.primary),
+                                      ],
+                                    ],
+                                  ),
                                 ),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

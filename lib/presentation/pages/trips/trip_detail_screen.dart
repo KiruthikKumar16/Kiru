@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
-import 'package:kiru/presentation/providers/app_mock_providers.dart';
+import 'package:kiru/presentation/providers/trip_provider.dart';
 
 class TripDetailScreen extends ConsumerWidget {
   final String tripId;
@@ -19,6 +19,36 @@ class TripDetailScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(trip.destination, style: const TextStyle(fontWeight: FontWeight.bold)),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: AppColors.error),
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Delete Itinerary'),
+                    content: const Text('Are you sure you want to delete this trip?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Delete', style: TextStyle(color: AppColors.error)),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  await ref.read(tripsProvider.notifier).deleteTrip(trip.id);
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+                  }
+                }
+              },
+            ),
+          ],
           bottom: const TabBar(
             indicatorColor: AppColors.primary,
             labelColor: AppColors.primary,
@@ -31,7 +61,6 @@ class TripDetailScreen extends ConsumerWidget {
         ),
         body: TabBarView(
           children: [
-            // Day by day timeline view
             ListView(
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
@@ -58,13 +87,26 @@ class TripDetailScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                _buildDayTile(context, dayNum: 1, title: 'Day 1: Arrival & Temple Exploration', outfit: 'Linen Vacation Shirt + Chino Trousers'),
-                _buildDayTile(context, dayNum: 2, title: 'Day 2: Cultural Walking Tour', outfit: 'Classic Denim Jacket + Canvas Sneakers'),
-                _buildDayTile(context, dayNum: 3, title: 'Day 3: Sunset Dinner & Drinks', outfit: 'Floral Midi Dress / Tailored Blazer'),
+                if (trip.dailyOutfits.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40.0),
+                    child: Center(
+                      child: Text('No daily outfits generated yet.', style: TextStyle(color: AppColors.textSecondary)),
+                    ),
+                  )
+                else
+                  ...trip.dailyOutfits.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final outfitText = entry.value;
+
+                    return _buildDayTile(
+                      context,
+                      dayNum: index + 1,
+                      outfit: outfitText,
+                    );
+                  }),
               ],
             ),
-
-            // Interactive Packing List
             ListView.builder(
               padding: const EdgeInsets.all(AppSpacing.lg),
               itemCount: trip.packingList.length + 1,
@@ -85,10 +127,16 @@ class TripDetailScreen extends ConsumerWidget {
                               children: [
                                 const Text('Luggage Progress', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                                 const SizedBox(height: 4),
-                                Text('$packedCount of ${trip.packingList.length} items packed', style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                                Text(
+                                  '$packedCount of ${trip.packingList.length} items packed',
+                                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                                ),
                               ],
                             ),
-                            const Text('Estimated: 14.2 kg', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary)),
+                            Text(
+                              '${((packedCount / trip.packingList.length) * 100).round()}%',
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                            ),
                           ],
                         ),
                       ),
@@ -98,11 +146,14 @@ class TripDetailScreen extends ConsumerWidget {
 
                 final item = trip.packingList[index - 1];
                 return CheckboxListTile(
-                  title: Text(item.title, style: TextStyle(decoration: item.isPacked ? TextDecoration.lineThrough : null)),
+                  title: Text(
+                    item.title,
+                    style: TextStyle(decoration: item.isPacked ? TextDecoration.lineThrough : null),
+                  ),
                   subtitle: Text(item.category, style: const TextStyle(fontSize: 12)),
                   value: item.isPacked,
                   activeColor: AppColors.primary,
-                  onChanged: (val) {
+                  onChanged: (_) {
                     ref.read(tripsProvider.notifier).togglePackingItem(trip.id, item.id);
                   },
                 );
@@ -114,7 +165,7 @@ class TripDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDayTile(BuildContext context, {required int dayNum, required String title, required String outfit}) {
+  Widget _buildDayTile(BuildContext context, {required int dayNum, required String outfit}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.lg),
       child: Container(
@@ -124,17 +175,21 @@ class TripDetailScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           border: Border.all(color: AppColors.border),
         ),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.checkroom, size: 18, color: AppColors.primary),
-                const SizedBox(width: 8),
-                Expanded(child: Text(outfit, style: const TextStyle(fontSize: 14, color: AppColors.textPrimary))),
-              ],
+            CircleAvatar(
+              backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+              child: Text('$dayNum', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(outfit, style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, height: 1.4)),
+                ],
+              ),
             ),
           ],
         ),

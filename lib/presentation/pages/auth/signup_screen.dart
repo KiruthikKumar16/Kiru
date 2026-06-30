@@ -7,6 +7,9 @@ import 'package:kiru/core/routes/app_routes.dart';
 import 'package:kiru/presentation/widgets/app_input_field.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
 
+import 'package:kiru/presentation/providers/auth_providers.dart';
+import 'package:kiru/presentation/providers/profile_provider.dart';
+
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
 
@@ -35,7 +38,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
-      await Future.delayed(const Duration(seconds: 1));
+      final authDataSource = ref.read(firebaseAuthDataSourceProvider);
+      final credential = await authDataSource.signUpWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+      if (credential.user != null) {
+        await ref.read(userProfileProvider.notifier).createProfileForUser(credential.user!);
+      }
       if (mounted) {
         context.go(AppRoutes.styleQuiz);
       }
@@ -52,9 +62,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
-      await Future.delayed(const Duration(seconds: 1));
-      if (mounted) {
-        context.go(AppRoutes.styleQuiz);
+      final authDataSource = ref.read(firebaseAuthDataSourceProvider);
+      final userCredential = await authDataSource.signInWithGoogle();
+      if (userCredential?.user != null &&
+          userCredential!.additionalUserInfo?.isNewUser == true) {
+        await ref.read(userProfileProvider.notifier).createProfileForUser(userCredential.user!);
+      }
+      if (userCredential != null && mounted) {
+        context.go(AppRoutes.home);
       }
     } catch (e) {
       if (!mounted) return;
