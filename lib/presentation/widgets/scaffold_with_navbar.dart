@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 
@@ -11,6 +12,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
   });
 
   void _onTap(int index) {
+    HapticFeedback.lightImpact();
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
@@ -65,11 +67,6 @@ class ScaffoldWithNavBar extends StatelessWidget {
               icon: Icon(Icons.auto_awesome_outlined),
               activeIcon: Icon(Icons.auto_awesome),
               label: 'Stylist',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profile',
             ),
           ],
         ),

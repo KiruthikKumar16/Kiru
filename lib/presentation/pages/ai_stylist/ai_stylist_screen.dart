@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kiru/core/config/app_config.dart';
-import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
-import 'package:kiru/presentation/providers/app_mock_providers.dart';
-import 'package:kiru/presentation/providers/profile_provider.dart';
-import 'package:kiru/presentation/providers/service_providers.dart';
-import 'package:kiru/presentation/providers/trip_provider.dart';
+import 'package:kiru/core/constants/app_colors.dart';
 
 class AiStylistScreen extends ConsumerStatefulWidget {
   const AiStylistScreen({super.key});
@@ -16,86 +12,103 @@ class AiStylistScreen extends ConsumerStatefulWidget {
 }
 
 class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
-  final List<Map<String, String>> _messages = [
+  final List<Map<String, dynamic>> _messages = [
     {
       'sender': 'ai',
-      'text':
-          'Hello! I am your AI Travel Stylist. Tell me where you are traveling or tap a prompt below to get outfit ideas from your wardrobe!',
+      'text': 'Hello! I am your AI Travel Stylist powered by Gemini. Tell me where you are traveling or select a prompt below to style from your wardrobe!',
+      'timestamp': DateTime.now().subtract(const Duration(minutes: 5)),
     },
   ];
 
   final TextEditingController _controller = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-  bool _isLoading = false;
+  bool _isTyping = false;
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
+  void _sendMessage(String text) {
+    if (text.isEmpty) return;
+    HapticFeedback.lightImpact();
+    setState(() {
+      _messages.add({
+        'sender': 'user',
+        'text': text,
+        'timestamp': DateTime.now(),
+      });
+      _controller.clear();
+      _isTyping = true;
+    });
 
-  void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+    // Simulate AI styling response
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _isTyping = false;
+          _messages.add({
+            'sender': 'ai',
+            'text': '✨ Here is your custom outfit synthesis from your Wardrobe:',
+            'outfitItems': [
+              {'title': 'Linen Vacation Shirt', 'image': 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400', 'type': 'Top'},
+              {'title': 'Chino Trousers', 'image': 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400', 'type': 'Bottom'},
+              {'title': 'Polarized Sunglasses', 'image': 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400', 'type': 'Accessory'},
+            ],
+            'timestamp': DateTime.now(),
+          });
+        });
       }
     });
   }
 
-  Future<void> _sendMessage(String text) async {
-    if (text.isEmpty || _isLoading) return;
+  String _formatTimestamp(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
 
-    setState(() {
-      _messages.add({'sender': 'user', 'text': text});
-      _controller.clear();
-      _isLoading = true;
-    });
-    _scrollToBottom();
-
-    final wardrobe = ref.read(wardrobeItemsProvider);
-    final profile = ref.read(userProfileProvider);
-    final trips = ref.read(tripsProvider);
-    final upcomingTrip = trips.isNotEmpty ? trips.first : null;
-
-    final response = await ref.read(aiStylistServiceProvider).generateOutfitAdvice(
-          userMessage: text,
-          wardrobe: wardrobe,
-          profile: profile,
-          trip: upcomingTrip,
-        );
-
-    if (mounted) {
-      setState(() {
-        _messages.add({'sender': 'ai', 'text': response});
-        _isLoading = false;
-      });
-      _scrollToBottom();
+    if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'Just now';
     }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
+        title: const Row(
           children: [
-            const Icon(Icons.auto_awesome, color: AppColors.primary),
-            const SizedBox(width: 8),
-            Text(
-              AppConfig.hasGeminiKey ? 'Gemini AI Stylist' : 'AI Stylist',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
+            Icon(Icons.auto_awesome, color: AppColors.primary),
+            SizedBox(width: 8),
+            Text('Gemini AI Stylist', style: TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
       ),
       body: SafeArea(
         child: Column(
           children: [
+            // Style Personas Chips
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              height: 48,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                children: [
+                  _buildPersonaChip('Minimalist'),
+                  _buildPersonaChip('Streetwear'),
+                  _buildPersonaChip('Ethnic Chic'),
+                  _buildPersonaChip('Preppy'),
+                  _buildPersonaChip('Bohemian'),
+                ],
+              ),
+            ),
+            // Prompt recommendation pills
             Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
               height: 48,
@@ -110,26 +123,44 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
               ),
             ),
             const Divider(height: 1),
+
+            // Messages view
             Expanded(
               child: ListView.builder(
-                controller: _scrollController,
                 padding: const EdgeInsets.all(AppSpacing.lg),
-                itemCount: _messages.length + (_isLoading ? 1 : 0),
+                itemCount: _messages.length + (_isTyping ? 1 : 0),
                 itemBuilder: (context, index) {
-                  if (_isLoading && index == _messages.length) {
-                    return const Padding(
-                      padding: EdgeInsets.only(bottom: AppSpacing.md),
+                  if (_isTyping && index == _messages.length) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
                       child: Align(
                         alignment: Alignment.centerLeft,
-                        child: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                        child: Container(
+                          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Text('Gemini is thinking...'),
+                            ],
+                          ),
                         ),
                       ),
                     );
                   }
-
                   final msg = _messages[index];
                   final isAi = msg['sender'] == 'ai';
 
@@ -137,28 +168,122 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
                     padding: const EdgeInsets.only(bottom: AppSpacing.md),
                     child: Align(
                       alignment: isAi ? Alignment.centerLeft : Alignment.centerRight,
-                      child: Container(
-                        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        decoration: BoxDecoration(
-                          color: isAi ? AppColors.surface : AppColors.primary,
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                          border: isAi ? Border.all(color: AppColors.border) : null,
-                        ),
-                        child: Text(
-                          msg['text']!,
-                          style: TextStyle(
-                            color: isAi ? AppColors.textPrimary : Colors.white,
-                            fontSize: 14,
-                            height: 1.4,
+                      child: Column(
+                        crossAxisAlignment: isAi ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+                        children: [
+                          Container(
+                            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+                            padding: const EdgeInsets.all(AppSpacing.lg),
+                            decoration: BoxDecoration(
+                              color: isAi ? AppColors.surface : AppColors.primary,
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                              border: isAi ? Border.all(color: AppColors.border) : null,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  msg['text']!,
+                                  style: TextStyle(
+                                    color: isAi ? AppColors.textPrimary : Colors.white,
+                                    fontSize: 14,
+                                    height: 1.4,
+                                  ),
+                                ),
+                                if (msg['outfitItems'] != null) ...[
+                                  const SizedBox(height: 16),
+                                  SizedBox(
+                                    height: 120,
+                                    child: ListView.separated(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: msg['outfitItems'].length,
+                                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                                      itemBuilder: (_, i) {
+                                        final item = msg['outfitItems'][i];
+                                        return Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(12),
+                                              child: Image.network(
+                                                item['image'],
+                                                width: 80,
+                                                height: 80,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            SizedBox(
+                                              width: 80,
+                                              child: Text(
+                                                item['title'],
+                                                style: const TextStyle(fontSize: 11),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.refresh, size: 20),
+                                        tooltip: 'Regenerate',
+                                        onPressed: () {
+                                          HapticFeedback.lightImpact();
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.save_outlined, size: 20),
+                                        tooltip: 'Save Outfit',
+                                        onPressed: () {
+                                          HapticFeedback.lightImpact();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text('Outfit saved!')),
+                                          );
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.inventory_2_outlined, size: 20),
+                                        tooltip: 'Add to Packing List',
+                                        onPressed: () {
+                                          HapticFeedback.lightImpact();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text('Added to packing list!')),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 4),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(
+                              _formatTimestamp(msg['timestamp']),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   );
                 },
               ),
             ),
+
+            // Input bar
             Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
@@ -173,10 +298,18 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
               ),
               child: Row(
                 children: [
+                  IconButton(
+                    icon: const Icon(Icons.mic_none_outlined),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Voice input coming soon!')),
+                      );
+                    },
+                  ),
                   Expanded(
                     child: TextField(
                       controller: _controller,
-                      enabled: !_isLoading,
                       decoration: const InputDecoration(
                         hintText: 'Ask AI Stylist e.g. "What to wear in Tokyo?"',
                         border: InputBorder.none,
@@ -187,8 +320,8 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.send, color: _isLoading ? AppColors.textSecondary : AppColors.primary),
-                    onPressed: _isLoading ? null : () => _sendMessage(_controller.text),
+                    icon: const Icon(Icons.send, color: AppColors.primary),
+                    onPressed: () => _sendMessage(_controller.text),
                   ),
                 ],
               ),
@@ -199,13 +332,26 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
     );
   }
 
+  Widget _buildPersonaChip(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: FilterChip(
+        label: Text(text, style: const TextStyle(fontSize: 12)),
+        backgroundColor: AppColors.surface,
+        onSelected: (val) {
+          HapticFeedback.lightImpact();
+        },
+      ),
+    );
+  }
+
   Widget _buildPromptChip(String text) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: ActionChip(
         label: Text(text, style: const TextStyle(fontSize: 12)),
         backgroundColor: AppColors.surface,
-        onPressed: _isLoading ? null : () => _sendMessage('Style me for $text'),
+        onPressed: () => _sendMessage('Style me for $text'),
       ),
     );
   }

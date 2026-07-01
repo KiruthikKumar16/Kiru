@@ -26,7 +26,7 @@ import 'package:kiru/presentation/pages/wardrobe/wardrobe_item_detail_screen.dar
 import 'package:kiru/presentation/pages/wardrobe/wardrobe_analytics_screen.dart';
 import 'package:kiru/presentation/pages/wardrobe/loaned_items_screen.dart';
 import 'package:kiru/presentation/pages/ai_stylist/ai_stylist_screen.dart';
-import 'package:kiru/presentation/pages/profile/profile_screen.dart';
+
 import 'package:kiru/presentation/pages/profile/edit_profile_screen.dart';
 import 'package:kiru/presentation/pages/profile/privacy_settings_screen.dart';
 import 'package:kiru/presentation/pages/profile/user_profile_screen.dart';
@@ -168,9 +168,6 @@ class AppRoutes {
           ),
           StatefulShellBranch(
             routes: [GoRoute(path: stylist, builder: (context, state) => const AiStylistScreen())],
-          ),
-          StatefulShellBranch(
-            routes: [GoRoute(path: profile, builder: (context, state) => const ProfileScreen())],
           ),
         ],
       ),

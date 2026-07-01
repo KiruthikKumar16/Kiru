@@ -8,6 +8,7 @@ class SocialPost {
   final int likes;
   final int comments;
   final bool isLiked;
+  final bool isSaved;
   final bool isVote;
   final String? optionA;
   final String? optionB;
@@ -22,6 +23,7 @@ class SocialPost {
     required this.likes,
     required this.comments,
     this.isLiked = false,
+    this.isSaved = false,
     this.isVote = false,
     this.optionA,
     this.optionB,
@@ -37,6 +39,7 @@ class SocialPost {
     int? likes,
     int? comments,
     bool? isLiked,
+    bool? isSaved,
     bool? isVote,
     String? optionA,
     String? optionB,
@@ -51,6 +54,7 @@ class SocialPost {
       likes: likes ?? this.likes,
       comments: comments ?? this.comments,
       isLiked: isLiked ?? this.isLiked,
+      isSaved: isSaved ?? this.isSaved,
       isVote: isVote ?? this.isVote,
       optionA: optionA ?? this.optionA,
       optionB: optionB ?? this.optionB,
@@ -68,6 +72,7 @@ class SocialPost {
       'likes': likes,
       'comments': comments,
       'isLiked': isLiked,
+      'isSaved': isSaved,
       'isVote': isVote,
       'optionA': optionA,
       'optionB': optionB,
@@ -85,6 +90,7 @@ class SocialPost {
       likes: map['likes'] as int? ?? 0,
       comments: map['comments'] as int? ?? 0,
       isLiked: map['isLiked'] as bool? ?? false,
+      isSaved: map['isSaved'] as bool? ?? false,
       isVote: map['isVote'] as bool? ?? false,
       optionA: map['optionA'] as String?,
       optionB: map['optionB'] as String?,

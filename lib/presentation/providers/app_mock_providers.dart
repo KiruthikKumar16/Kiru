@@ -3,6 +3,69 @@ import 'package:hive/hive.dart';
 import 'package:kiru/data/models/wardrobe_item.dart';
 import 'package:kiru/data/models/social_post.dart';
 
+// Inspiration Model
+class InspirationItem {
+  final String id;
+  final String title;
+  final String description;
+  final String imageUrl;
+  final String destination;
+
+  const InspirationItem({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.imageUrl,
+    required this.destination,
+  });
+}
+
+// Inspiration Provider
+final inspirationProvider = Provider<List<InspirationItem>>((ref) {
+  return const [
+    InspirationItem(
+      id: 'i1',
+      title: 'Bali Tropical Escape',
+      description: 'Recommended: Light linen shorts, UV sunglasses & breathable shirts.',
+      imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&auto=format&fit=crop',
+      destination: 'Bali, Indonesia',
+    ),
+    InspirationItem(
+      id: 'i2',
+      title: 'Swiss Alps Adventure',
+      description: 'Recommended: Layered sweaters, waterproof boots & thermal leggings.',
+      imageUrl: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=300&auto=format&fit=crop',
+      destination: 'Zermatt, Switzerland',
+    ),
+    InspirationItem(
+      id: 'i3',
+      title: 'Parisian Chic',
+      description: 'Recommended: Tailored blazer, silk scarf & leather ankle boots.',
+      imageUrl: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=300&auto=format&fit=crop',
+      destination: 'Paris, France',
+    ),
+    InspirationItem(
+      id: 'i4',
+      title: 'Dubai Luxury',
+      description: 'Recommended: Elegant maxi dress, statement jewelry & designer sandals.',
+      imageUrl: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=300&auto=format&fit=crop',
+      destination: 'Dubai, UAE',
+    ),
+  ];
+});
+
+// Dynamic Subtitle Provider (based on time of day)
+final dynamicSubtitleProvider = Provider<String>((ref) {
+  final hour = DateTime.now().hour;
+  if (hour < 12) {
+    return 'Good morning! Ready to plan your next adventure?';
+  } else if (hour < 17) {
+    return 'Good afternoon! Looking for some style inspiration?';
+  } else {
+    return 'Good evening! Let\'s get ready for your trip!';
+  }
+});
+
 // Wardrobe State Provider
 final wardrobeItemsProvider =
     StateNotifierProvider<WardrobeNotifier, List<WardrobeItem>>((ref) {
@@ -142,7 +205,7 @@ class SocialFeedNotifier extends StateNotifier<List<SocialPost>> {
     await box.put(_hiveKey, state.map((p) => p.toMap()).toList());
   }
 
-  static final List<SocialPost> _initialPosts = [
+  static const List<SocialPost> _initialPosts = [
     SocialPost(
       id: 'sp1',
       authorName: 'Elena Rostova',
@@ -184,6 +247,18 @@ class SocialFeedNotifier extends StateNotifier<List<SocialPost>> {
         return post.copyWith(
           likes: post.isLiked ? post.likes - 1 : post.likes + 1,
           isLiked: !post.isLiked,
+        );
+      }
+      return post;
+    }).toList();
+    _savePosts();
+  }
+
+  void toggleSave(String id) {
+    state = state.map((post) {
+      if (post.id == id) {
+        return post.copyWith(
+          isSaved: !post.isSaved,
         );
       }
       return post;
