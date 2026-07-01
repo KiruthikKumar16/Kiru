@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
+import 'package:kiru/core/routes/app_routes.dart';
 
 class AiStylistScreen extends ConsumerStatefulWidget {
   const AiStylistScreen({super.key});
@@ -54,6 +56,10 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
         });
       }
     });
+  }
+
+  void _surpriseMe() {
+    _sendMessage('Surprise me with a random outfit!');
   }
 
   String _formatTimestamp(DateTime timestamp) {
@@ -108,17 +114,34 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
                 ],
               ),
             ),
-            // Prompt recommendation pills
+            // Prompt recommendation pills and Surprise Me
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              height: 48,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              child: Row(
                 children: [
-                  _buildPromptChip('🌴 Beach Sunset in Bali'),
-                  _buildPromptChip('🏛️ Museum Walking in Kyoto'),
-                  _buildPromptChip('👔 Business Dinner in London'),
+                  Expanded(
+                    child: SizedBox(
+                      height: 36,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          _buildPromptChip('🌴 Beach Sunset in Bali'),
+                          _buildPromptChip('🏛️ Museum Walking in Kyoto'),
+                          _buildPromptChip('👔 Business Dinner in London'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: _surpriseMe,
+                    icon: const Icon(Icons.casino_outlined),
+                    label: const Text('Surprise Me'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -143,9 +166,9 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
                             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                             border: Border.all(color: AppColors.border),
                           ),
-                          child: Row(
+                          child: const Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
+                            children: [
                               SizedBox(
                                 width: 20,
                                 height: 20,
@@ -192,39 +215,45 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
                                 ),
                                 if (msg['outfitItems'] != null) ...[
                                   const SizedBox(height: 16),
-                                  SizedBox(
-                                    height: 120,
-                                    child: ListView.separated(
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: msg['outfitItems'].length,
-                                      separatorBuilder: (_, __) => const SizedBox(width: 12),
-                                      itemBuilder: (_, i) {
-                                        final item = msg['outfitItems'][i];
-                                        return Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(12),
-                                              child: Image.network(
-                                                item['image'],
+                                  GestureDetector(
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      context.push(AppRoutes.recommendationDetail);
+                                    },
+                                    child: SizedBox(
+                                      height: 120,
+                                      child: ListView.separated(
+                                        scrollDirection: Axis.horizontal,
+                                        itemCount: msg['outfitItems'].length,
+                                        separatorBuilder: (_, __) => const SizedBox(width: 12),
+                                        itemBuilder: (_, i) {
+                                          final item = msg['outfitItems'][i];
+                                          return Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              ClipRRect(
+                                                borderRadius: BorderRadius.circular(12),
+                                                child: Image.network(
+                                                  item['image'],
+                                                  width: 80,
+                                                  height: 80,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              SizedBox(
                                                 width: 80,
-                                                height: 80,
-                                                fit: BoxFit.cover,
+                                                child: Text(
+                                                  item['title'],
+                                                  style: const TextStyle(fontSize: 11),
+                                                  maxLines: 2,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            SizedBox(
-                                              width: 80,
-                                              child: Text(
-                                                item['title'],
-                                                style: const TextStyle(fontSize: 11),
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      },
+                                            ],
+                                          );
+                                        },
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 12),

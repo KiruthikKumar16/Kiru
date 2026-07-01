@@ -8,7 +8,7 @@ import 'package:kiru/core/routes/app_routes.dart';
 import 'package:kiru/presentation/providers/trip_provider.dart';
 import 'package:intl/intl.dart';
 
-enum TripFilter { upcoming, past, all }
+enum TripFilter { upcoming, past, shared, all }
 
 class TripsScreen extends ConsumerStatefulWidget {
   const TripsScreen({super.key});
@@ -19,6 +19,18 @@ class TripsScreen extends ConsumerStatefulWidget {
 
 class _TripsScreenState extends ConsumerState<TripsScreen> {
   TripFilter _selectedFilter = TripFilter.upcoming;
+  final List<Map<String, dynamic>> _sharedTrips = [
+    {
+      'id': 'st1',
+      'title': 'Tokyo Adventure',
+      'destination': 'Tokyo',
+      'country': 'Japan',
+      'imageUrl': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&auto=format&fit=crop',
+      'startDate': DateTime.now().add(const Duration(days: 20)),
+      'endDate': DateTime.now().add(const Duration(days: 28)),
+      'sharedBy': 'Elena Rostova',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +44,9 @@ class _TripsScreenState extends ConsumerState<TripsScreen> {
         break;
       case TripFilter.past:
         filteredTrips = trips.where((t) => t.startDate.isBefore(now)).toList();
+        break;
+      case TripFilter.shared:
+        filteredTrips = _sharedTrips;
         break;
       case TripFilter.all:
         filteredTrips = trips;
@@ -63,6 +78,10 @@ class _TripsScreenState extends ConsumerState<TripsScreen> {
                 ButtonSegment(
                   value: TripFilter.past,
                   label: Text('Past'),
+                ),
+                ButtonSegment(
+                  value: TripFilter.shared,
+                  label: Text('Shared'),
                 ),
                 ButtonSegment(
                   value: TripFilter.all,
@@ -102,18 +121,21 @@ class _TripsScreenState extends ConsumerState<TripsScreen> {
                             ? 'No upcoming trips yet'
                             : _selectedFilter == TripFilter.past
                                 ? 'No past trips'
-                                : 'No trips yet',
+                                : _selectedFilter == TripFilter.shared
+                                    ? 'No shared trips yet'
+                                    : 'No trips yet',
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.textSecondary),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          context.push(AppRoutes.createTrip);
-                        },
-                        icon: const Icon(Icons.add),
-                        label: const Text('Plan a Trip'),
-                      ),
+                      if (_selectedFilter != TripFilter.shared)
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            context.push(AppRoutes.createTrip);
+                          },
+                          icon: const Icon(Icons.add),
+                          label: const Text('Plan a Trip'),
+                        ),
                     ],
                   ),
                 ),
@@ -123,21 +145,114 @@ class _TripsScreenState extends ConsumerState<TripsScreen> {
                 itemCount: filteredTrips.length,
                 itemBuilder: (context, index) {
                   final trip = filteredTrips[index];
-                  final dateStr = trip.hideDates
+                  
+                  if (_selectedFilter == TripFilter.shared) {
+                    final sharedTrip = trip as Map<String, dynamic>;
+                    final dateStr = '${DateFormat('MMM d').format(sharedTrip['startDate'])} - ${DateFormat('MMM d, yyyy').format(sharedTrip['endDate'])}';
+                    final tripDuration = (sharedTrip['endDate'] as DateTime).difference(sharedTrip['startDate'] as DateTime).inDays + 1;
+                    
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+                      child: InkWell(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Shared trip details coming soon!')),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+                                child: Image.network(
+                                  sharedTrip['imageUrl'],
+                                  height: 160,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(AppSpacing.lg),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            '${sharedTrip['destination']}, ${sharedTrip['country']}',
+                                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.calendar_today, size: 14, color: AppColors.textSecondary),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(dateStr, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.surface,
+                                            borderRadius: BorderRadius.circular(4),
+                                            border: Border.all(color: AppColors.border),
+                                          ),
+                                          child: Text(
+                                            '$tripDuration days',
+                                            style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w500),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.person_outline, size: 14, color: AppColors.textSecondary),
+                                        const SizedBox(width: 6),
+                                        Text('Shared by ${sharedTrip['sharedBy']}', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  
+                  final regularTrip = trip;
+                  final dateStr = regularTrip.hideDates
                       ? 'Dates Hidden (Private)'
-                      : '${DateFormat('MMM d').format(trip.startDate)} - ${DateFormat('MMM d, yyyy').format(trip.endDate)}';
-                  final destStr = trip.hideLocation
-                      ? 'Hidden Location, ${trip.country}'
-                      : '${trip.destination}, ${trip.country}';
+                      : '${DateFormat('MMM d').format(regularTrip.startDate)} - ${DateFormat('MMM d, yyyy').format(regularTrip.endDate)}';
+                  final destStr = regularTrip.hideLocation
+                      ? 'Hidden Location, ${regularTrip.country}'
+                      : '${regularTrip.destination}, ${regularTrip.country}';
 
-                  final tripDuration = trip.endDate.difference(trip.startDate).inDays + 1;
+                  final tripDuration = regularTrip.endDate.difference(regularTrip.startDate).inDays + 1;
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.lg),
                     child: InkWell(
                       onTap: () {
                         HapticFeedback.lightImpact();
-                        context.push('/trips/${trip.id}');
+                        context.push('/trips/${regularTrip.id}');
                       },
                       borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
                       child: Container(
@@ -152,7 +267,7 @@ class _TripsScreenState extends ConsumerState<TripsScreen> {
                             ClipRRect(
                               borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
                               child: Image.network(
-                                trip.imageUrl,
+                                regularTrip.imageUrl,
                                 height: 160,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
@@ -177,7 +292,7 @@ class _TripsScreenState extends ConsumerState<TripsScreen> {
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
-                                            if (trip.isPrivate) ...[
+                                            if (regularTrip.isPrivate) ...[
                                               const SizedBox(width: 6),
                                               const Icon(Icons.lock_outline, size: 16, color: AppColors.primary),
                                             ],
@@ -191,7 +306,7 @@ class _TripsScreenState extends ConsumerState<TripsScreen> {
                                           borderRadius: BorderRadius.circular(6),
                                         ),
                                         child: Text(
-                                          trip.weatherTemp,
+                                          regularTrip.weatherTemp,
                                           style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12),
                                         ),
                                       ),

@@ -8,16 +8,18 @@ class DiscoverScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Discover Travel Styles', style: TextStyle(fontWeight: FontWeight.bold)),
           bottom: const TabBar(
+            isScrollable: true,
             indicatorColor: AppColors.primary,
             labelColor: AppColors.primary,
             unselectedLabelColor: AppColors.textSecondary,
             tabs: [
               Tab(text: 'Destination Feeds'),
+              Tab(text: 'Trending Outfits'),
               Tab(text: 'Trip Twin Finder'),
               Tab(text: 'Creator Market'),
             ],
@@ -32,6 +34,19 @@ class DiscoverScreen extends StatelessWidget {
                 _buildDestCard('Paris Fashion Week & Autumn Streets', 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&auto=format&fit=crop'),
                 const SizedBox(height: 16),
                 _buildDestCard('Kyoto Cherry Blossom Resortwear', 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&auto=format&fit=crop'),
+              ],
+            ),
+            // Trending Outfits
+            GridView.count(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              children: [
+                _buildTrendingCard('Linen Set', 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&auto=format&fit=crop'),
+                _buildTrendingCard('Denim Jacket', 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=400&auto=format&fit=crop'),
+                _buildTrendingCard('Maxi Dress', 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400&auto=format&fit=crop'),
+                _buildTrendingCard('Sneakers', 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&auto=format&fit=crop'),
               ],
             ),
             // Trip Twin Finder
@@ -105,6 +120,30 @@ class DiscoverScreen extends StatelessWidget {
         child: Align(
           alignment: Alignment.bottomLeft,
           child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTrendingCard(String title, String imgUrl) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        image: DecorationImage(image: NetworkImage(imgUrl), fit: BoxFit.cover),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
+          ),
+        ),
+        child: Align(
+          alignment: Alignment.bottomLeft,
+          child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
         ),
       ),
     );

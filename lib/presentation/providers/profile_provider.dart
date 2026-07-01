@@ -81,7 +81,10 @@ class ProfileNotifier extends StateNotifier<UserProfile?> {
     String? photoUrl,
     String? bodyShape,
     String? undertone,
+    String? stylePersona,
     List<String>? stylePreferences,
+    List<String>? favoriteColors,
+    BodyMeasurements? measurements,
     bool? culturalSensitivity,
     bool? modestFashion,
   }) async {
@@ -95,7 +98,10 @@ class ProfileNotifier extends StateNotifier<UserProfile?> {
       photoUrl: photoUrl,
       bodyShape: bodyShape,
       undertone: undertone,
+      stylePersona: stylePersona,
       stylePreferences: stylePreferences,
+      favoriteColors: favoriteColors,
+      measurements: measurements,
       culturalSensitivity: culturalSensitivity,
       modestFashion: modestFashion,
     );

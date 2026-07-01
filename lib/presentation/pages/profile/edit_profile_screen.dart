@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
@@ -17,6 +18,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _usernameController;
   late final TextEditingController _bioController;
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -33,6 +35,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _usernameController.dispose();
     _bioController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickPhoto() async {
+    final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      // Handle photo upload - for now just show a snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Photo selected!')),
+        );
+      }
+    }
   }
 
   Future<void> _saveChanges() async {
@@ -57,16 +71,32 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundImage: NetworkImage(profile?.photoUrl ?? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop'),
+              Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: NetworkImage(profile?.photoUrl ?? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop'),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: IconButton(
+                      onPressed: _pickPhoto,
+                      icon: const Icon(Icons.camera_alt),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: AppSpacing.lg),
               AppInputField(controller: _nameController, labelText: 'Display Name'),
               const SizedBox(height: AppSpacing.md),
               AppInputField(controller: _usernameController, labelText: 'Username'),
               const SizedBox(height: AppSpacing.md),
-              AppInputField(controller: _bioController, labelText: 'Bio / Travel Persona'),
+              AppInputField(controller: _bioController, labelText: 'Bio', maxLines: 3),
               const SizedBox(height: AppSpacing.xl),
               AppButton(text: 'Save Changes', onPressed: _saveChanges),
             ],

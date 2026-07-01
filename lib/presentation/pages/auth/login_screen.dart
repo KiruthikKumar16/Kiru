@@ -92,6 +92,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _signInWithApple() async {
+    setState(() => _isLoading = true);
+    try {
+      final authDataSource = ref.read(firebaseAuthDataSourceProvider);
+      final userCredential = await authDataSource.signInWithApple();
+      if (userCredential != null && mounted) {
+        context.go(AppRoutes.home);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -183,6 +201,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   text: AppStrings.loginWithGoogle,
                   type: AppButtonType.secondary,
                   onPressed: _signInWithGoogle,
+                  isLoading: _isLoading,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppButton(
+                  text: AppStrings.loginWithApple,
+                  type: AppButtonType.secondary,
+                  onPressed: _signInWithApple,
                   isLoading: _isLoading,
                 ),
                 const SizedBox(height: AppSpacing.xxl),

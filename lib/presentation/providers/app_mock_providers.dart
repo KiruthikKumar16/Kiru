@@ -171,6 +171,13 @@ class WardrobeNotifier extends StateNotifier<List<WardrobeItem>> {
     await _box.delete(id);
     state = _box.values.toList();
   }
+
+  void logWear(String id) {
+    final item = state.firstWhere((i) => i.id == id);
+    final updatedItem = item.copyWith(wearCount: item.wearCount + 1);
+    _box.put(id, updatedItem);
+    state = _box.values.toList();
+  }
 }
 
 // Social Feed Provider (local persistence via Hive settings box)

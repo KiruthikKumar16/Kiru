@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kiru/core/constants/app_colors.dart';
@@ -7,16 +8,20 @@ import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
 import 'package:kiru/presentation/providers/app_mock_providers.dart';
 
-class WardrobeItemDetailScreen extends ConsumerWidget {
+class WardrobeItemDetailScreen extends ConsumerStatefulWidget {
   final String itemId;
-
   const WardrobeItemDetailScreen({super.key, required this.itemId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WardrobeItemDetailScreen> createState() => _WardrobeItemDetailScreenState();
+}
+
+class _WardrobeItemDetailScreenState extends ConsumerState<WardrobeItemDetailScreen> {
+  @override
+  Widget build(BuildContext context) {
     final items = ref.watch(wardrobeItemsProvider);
     final item = items.firstWhere(
-      (i) => i.id == itemId,
+      (i) => i.id == widget.itemId,
       orElse: () => items.first,
     );
 
@@ -27,12 +32,19 @@ class WardrobeItemDetailScreen extends ConsumerWidget {
         title: const Text('Item Details', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: 'Edit Item',
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Edit Item coming soon!')),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.delete_outline, color: AppColors.error),
             onPressed: () async {
-              await ref.read(wardrobeItemsProvider.notifier).removeItem(item.id);
-              if (context.mounted) {
-                context.pop();
-              }
+              _showDeleteConfirmation();
             },
           ),
         ],
@@ -81,6 +93,17 @@ class WardrobeItemDetailScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
+              AppButton(
+                text: 'Log Wear',
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  ref.read(wardrobeItemsProvider.notifier).logWear(item.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Logged wear for ${item.title}')),
+                  );
+                },
+              ),
+              const SizedBox(height: AppSpacing.md),
               Text('AI Outfit Pairings', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: AppSpacing.md),
               const ListTile(
@@ -91,11 +114,42 @@ class WardrobeItemDetailScreen extends ConsumerWidget {
               AppButton(
                 text: '🤝 Loan Item to Friend',
                 type: AppButtonType.secondary,
-                onPressed: () {},
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Loan Item coming soon!')),
+                  );
+                },
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Item?'),
+        content: const Text('This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              HapticFeedback.lightImpact();
+              await ref.read(wardrobeItemsProvider.notifier).removeItem(widget.itemId);
+              if (mounted) {
+                context.pop();
+              }
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

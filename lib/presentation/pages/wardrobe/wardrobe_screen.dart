@@ -62,6 +62,14 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
         title: const Text('Virtual Wardrobe', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
+            icon: const Icon(Icons.swap_horiz_outlined),
+            tooltip: 'Loaned Items',
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              context.push(AppRoutes.loanedItems);
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.analytics_outlined, color: AppColors.primary),
             onPressed: () {
               HapticFeedback.lightImpact();

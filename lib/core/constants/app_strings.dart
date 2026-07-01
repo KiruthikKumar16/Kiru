@@ -14,6 +14,7 @@ class AppStrings {
   static const String confirmPassword = 'Confirm Password';
   static const String forgotPassword = 'Forgot Password?';
   static const String loginWithGoogle = 'Continue with Google';
+  static const String loginWithApple = 'Continue with Apple';
   static const String noAccount = "Don't have an account? ";
   static const String haveAccount = 'Already have an account? ';
 

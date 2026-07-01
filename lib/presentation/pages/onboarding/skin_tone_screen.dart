@@ -1,8 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive/hive.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/routes/app_routes.dart';
@@ -48,44 +46,40 @@ class _SkinToneScreenState extends ConsumerState<SkinToneScreen> {
     });
   }
 
-  Future<void> _completeOnboarding() async {
+  Future<void> _continue() async {
     await ref.read(userProfileProvider.notifier).updateProfile(undertone: _selectedUndertone);
-
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final box = Hive.box('settings');
-      await box.put('onboarding_completed_${user.uid}', true);
-    }
-    if (mounted) {
-      context.go(AppRoutes.home);
-    }
+    if (mounted) context.go(AppRoutes.wardrobeSetup);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Color Palette Matching'),
-        actions: [
-          TextButton(
-            onPressed: _completeOnboarding,
-            child: const Text('Skip'),
-          ),
-        ],
-      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Select Your Color Undertone',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () => context.pop(),
+                  ),
+                  Text(
+                    'Color Palette Matching',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  TextButton(
+                    onPressed: _continue,
+                    child: const Text('Skip'),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.xs),
+              const SizedBox(height: AppSpacing.sm),
               const Text(
                 'Used by AI Stylist to generate high-contrast outfit pairings.',
                 style: TextStyle(color: AppColors.textSecondary),
@@ -100,9 +94,8 @@ class _SkinToneScreenState extends ConsumerState<SkinToneScreen> {
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-                      child: InkWell(
+                      child: GestureDetector(
                         onTap: () => setState(() => _selectedUndertone = item['title']!),
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                         child: Container(
                           padding: const EdgeInsets.all(AppSpacing.lg),
                           decoration: BoxDecoration(
@@ -155,8 +148,8 @@ class _SkinToneScreenState extends ConsumerState<SkinToneScreen> {
                 ),
               ),
               AppButton(
-                text: 'Complete Onboarding & Start Kiru',
-                onPressed: _completeOnboarding,
+                text: 'Continue',
+                onPressed: _continue,
               ),
             ],
           ),

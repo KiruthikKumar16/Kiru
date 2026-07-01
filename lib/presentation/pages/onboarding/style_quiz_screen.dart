@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kiru/core/constants/app_strings.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/routes/app_routes.dart';
@@ -20,7 +19,9 @@ class StyleQuizScreen extends ConsumerStatefulWidget {
 class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
   final CardSwiperController _controller = CardSwiperController();
   final List<String> _likedStyles = [];
-  bool _isFinished = false;
+  final List<String> _selectedColors = [];
+  String _selectedPersona = '';
+  int _currentStep = 0; // 0: Outfit cards, 1: Color palette, 2: Persona
 
   final List<StyleQuizItem> _quizItems = [
     const StyleQuizItem(
@@ -58,20 +59,49 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
       category: 'Casual',
       tags: ['cozy', 'knitwear', 'warm'],
     ),
-    const StyleQuizItem(
-      id: '6',
-      imageUrl: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600&auto=format&fit=crop',
-      title: 'High-Fashion Statement',
-      category: 'High Fashion',
-      tags: ['bold', 'avantgarde', 'editorial'],
-    ),
-    const StyleQuizItem(
-      id: '7',
-      imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop',
-      title: 'Balearic Islands Resortwear',
-      category: 'Resort',
-      tags: ['summer', 'linen', 'relaxing'],
-    ),
+  ];
+
+  final List<Map<String, dynamic>> _colors = [
+    {'name': 'Black', 'color': const Color(0xFF000000)},
+    {'name': 'White', 'color': const Color(0xFFFFFFFF)},
+    {'name': 'Navy', 'color': const Color(0xFF000080)},
+    {'name': 'Gray', 'color': const Color(0xFF808080)},
+    {'name': 'Beige', 'color': const Color(0xFFF5F5DC)},
+    {'name': 'Brown', 'color': const Color(0xFFA52A2A)},
+    {'name': 'Blue', 'color': const Color(0xFF0000FF)},
+    {'name': 'Green', 'color': const Color(0xFF008000)},
+    {'name': 'Red', 'color': const Color(0xFFFF0000)},
+    {'name': 'Pink', 'color': const Color(0xFFFFC0CB)},
+    {'name': 'Purple', 'color': const Color(0xFF800080)},
+    {'name': 'Yellow', 'color': const Color(0xFFFFFF00)},
+  ];
+
+  final List<Map<String, String>> _personas = [
+    {
+      'name': 'The Minimalist',
+      'description': 'Clean lines, neutral tones, and timeless pieces',
+      'icon': '🧥',
+    },
+    {
+      'name': 'The Trendsetter',
+      'description': 'Always up-to-date with the latest fashion',
+      'icon': '👗',
+    },
+    {
+      'name': 'The Bohemian',
+      'description': 'Free-spirited with flowy fabrics and patterns',
+      'icon': '🌿',
+    },
+    {
+      'name': 'The Classic',
+      'description': 'Elegant, sophisticated, and traditional',
+      'icon': '🎩',
+    },
+    {
+      'name': 'The Streetwear Enthusiast',
+      'description': 'Urban, casual, and bold styles',
+      'icon': '👟',
+    },
   ];
 
   @override
@@ -84,16 +114,15 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
     if (direction == CardSwiperDirection.right && previousIndex < _quizItems.length) {
       _likedStyles.add(_quizItems[previousIndex].category);
     }
-    setState(() {
-      if (currentIndex == null) _isFinished = true;
-    });
     return true;
   }
 
   Future<void> _saveAndContinue() async {
-    if (_likedStyles.isNotEmpty) {
+    if (_likedStyles.isNotEmpty || _selectedColors.isNotEmpty || _selectedPersona.isNotEmpty) {
       await ref.read(userProfileProvider.notifier).updateProfile(
             stylePreferences: _likedStyles.toSet().toList(),
+            favoriteColors: _selectedColors,
+            stylePersona: _selectedPersona,
           );
     }
     if (mounted) context.go(AppRoutes.bodyProfile);
@@ -108,10 +137,28 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
           child: Column(
             children: [
               Row(
+                children: List.generate(3, (index) => Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(right: index < 2 ? 8 : 0),
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: index <= _currentStep ? AppColors.primary : AppColors.border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                )),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  if (_currentStep > 0)
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () => setState(() => _currentStep--),
+                    ),
                   Text(
-                    AppStrings.onboardingTitle,
+                    _getStepTitle(),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -122,9 +169,9 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.xs),
+              const SizedBox(height: AppSpacing.sm),
               Text(
-                AppStrings.onboardingSubtitle,
+                _getStepDescription(),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -132,26 +179,73 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
               Expanded(
-                child: _isFinished
-                    ? _buildCompletedState()
-                    : CardSwiper(
-                        controller: _controller,
-                        cardsCount: _quizItems.length,
-                        onSwipe: _onSwipe,
-                        onEnd: () => setState(() => _isFinished = true),
-                        padding: EdgeInsets.zero,
-                        cardBuilder: (context, index, percentX, percentY) {
-                          return _buildQuizCard(_quizItems[index]);
-                        },
-                      ),
+                child: _buildCurrentStep(),
               ),
               const SizedBox(height: AppSpacing.lg),
-              if (!_isFinished) _buildActionButtons(),
+              if (_currentStep == 0) _buildActionButtons(),
+              if (_currentStep > 0)
+                AppButton(
+                  text: _currentStep == 2 ? 'Continue' : 'Next',
+                  onPressed: () {
+                    if (_currentStep < 2) {
+                      setState(() => _currentStep++);
+                    } else {
+                      _saveAndContinue();
+                    }
+                  },
+                ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  String _getStepTitle() {
+    switch (_currentStep) {
+      case 0:
+        return 'Outfit Preferences';
+      case 1:
+        return 'Favorite Colors';
+      case 2:
+        return 'Style Persona';
+      default:
+        return '';
+    }
+  }
+
+  String _getStepDescription() {
+    switch (_currentStep) {
+      case 0:
+        return 'Swipe right if you like it, left if you don\'t';
+      case 1:
+        return 'Select colors that you love to wear';
+      case 2:
+        return 'Choose the style that best describes you';
+      default:
+        return '';
+    }
+  }
+
+  Widget _buildCurrentStep() {
+    switch (_currentStep) {
+      case 0:
+        return CardSwiper(
+          controller: _controller,
+          cardsCount: _quizItems.length,
+          onSwipe: _onSwipe,
+          padding: EdgeInsets.zero,
+          cardBuilder: (context, index, percentX, percentY) {
+            return _buildQuizCard(_quizItems[index]);
+          },
+        );
+      case 1:
+        return _buildColorSelection();
+      case 2:
+        return _buildPersonaSelection();
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   Widget _buildQuizCard(StyleQuizItem item) {
@@ -260,33 +354,114 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
     );
   }
 
-  Widget _buildCompletedState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.stars, size: 90, color: AppColors.primary),
-          const SizedBox(height: AppSpacing.xl),
-          Text(
-            'Style Profile Calibrated!',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            _likedStyles.isEmpty
-                ? 'We analyzed your preferences to tailor personalized AI outfit recommendations.'
-                : 'You love: ${_likedStyles.toSet().join(', ')}',
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-          AppButton(
-            text: 'Next: Body Profile',
-            onPressed: _saveAndContinue,
-          ),
-        ],
+  Widget _buildColorSelection() {
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
       ),
+      itemCount: _colors.length,
+      itemBuilder: (context, index) {
+        final color = _colors[index];
+        final isSelected = _selectedColors.contains(color['name']);
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              if (isSelected) {
+                _selectedColors.remove(color['name']);
+              } else {
+                _selectedColors.add(color['name']);
+              }
+            });
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: color['color'],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected ? AppColors.primary : AppColors.border,
+                width: isSelected ? 3 : 1,
+              ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      )
+                    ]
+                  : [],
+            ),
+            child: isSelected
+                ? const Icon(Icons.check, color: Colors.white)
+                : null,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPersonaSelection() {
+    return ListView.builder(
+      itemCount: _personas.length,
+      itemBuilder: (context, index) {
+        final persona = _personas[index];
+        final isSelected = _selectedPersona == persona['name'];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+          child: GestureDetector(
+            onTap: () => setState(() => _selectedPersona = persona['name']!),
+            child: Container(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : AppColors.surface,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                border: Border.all(
+                  color: isSelected ? AppColors.primary : AppColors.border,
+                  width: isSelected ? 2 : 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    persona['icon']!,
+                    style: const TextStyle(fontSize: 40),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          persona['name']!,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          persona['description']!,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
