@@ -187,7 +187,7 @@ class _BodyProfileScreenState extends ConsumerState<BodyProfileScreen> {
       ),
       child: Column(
         children: [
-          Icon(Icons.photo_camera, size: 48, color: AppColors.primary),
+          const Icon(Icons.photo_camera, size: 48, color: AppColors.primary),
           const SizedBox(height: AppSpacing.sm),
           Text(
             _hasDetected ? 'Detection Complete!' : 'Auto-Detect Measurements',

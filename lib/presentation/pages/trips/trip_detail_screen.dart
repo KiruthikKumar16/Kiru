@@ -321,7 +321,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
             tileColor: AppColors.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              side: BorderSide(color: AppColors.border),
+              side: const BorderSide(color: AppColors.border),
             ),
             title: Text(
               item.title,
@@ -360,7 +360,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
           const Text('Current Collaborators', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: AppSpacing.md),
           ListTile(
-            leading: CircleAvatar(
+            leading: const CircleAvatar(
               backgroundImage: NetworkImage('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop'),
             ),
             title: const Text('Elena Rostova'),

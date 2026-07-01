@@ -100,7 +100,7 @@ class _TripsScreenState extends ConsumerState<TripsScreen> {
                 selectedForegroundColor: Colors.white,
                 foregroundColor: AppColors.textPrimary,
                 backgroundColor: AppColors.surface,
-                side: BorderSide(color: AppColors.border),
+                side: const BorderSide(color: AppColors.border),
               ),
             ),
           ),

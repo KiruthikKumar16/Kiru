@@ -128,7 +128,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                                                   const SizedBox(width: 8),
                                                   const Text('•', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
                                                   const SizedBox(width: 8),
-                                                  Text('2h ago', style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+                                                  const Text('2h ago', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
                                                 ],
                                               ),
                                             ],

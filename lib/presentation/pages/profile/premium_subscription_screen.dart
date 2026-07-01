@@ -1,3 +1,4 @@
+// ignore_for_file: prefer_const_constructors
 import 'package:flutter/material.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
@@ -16,9 +17,9 @@ class PremiumSubscriptionScreen extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(AppSpacing.xl),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFFEC4899)]),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(colors: [Color(0xFF6366F1), Color(0xFFEC4899)]),
+                  borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radiusXl)),
                 ),
                 child: Column(
                   children: const [

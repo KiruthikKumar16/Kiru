@@ -102,15 +102,15 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                   fillColor: AppColors.surface,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                    borderSide: BorderSide(color: AppColors.border),
+                    borderSide: const BorderSide(color: AppColors.border),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                    borderSide: BorderSide(color: AppColors.border),
+                    borderSide: const BorderSide(color: AppColors.border),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                    borderSide: BorderSide(color: AppColors.primary),
+                    borderSide: const BorderSide(color: AppColors.primary),
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
                 ),
@@ -191,7 +191,7 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.textSecondary),
                             ),
                             const SizedBox(height: AppSpacing.sm),
-                            Text(
+                            const Text(
                               'Add your first clothing item to get started!',
                               style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
                               textAlign: TextAlign.center,

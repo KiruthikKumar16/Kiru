@@ -93,14 +93,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               ),
               if (_postType == PostType.vote) ...[
                 const SizedBox(height: AppSpacing.lg),
-                AppInputField(
+                const AppInputField(
                   labelText: 'Option A',
-                  hintText: 'e.g. Trench Coat + Oxfords',
+                  hintText: 'e.g. Trench Coat & Oxfords',
                 ),
                 const SizedBox(height: AppSpacing.md),
-                AppInputField(
+                const AppInputField(
                   labelText: 'Option B',
-                  hintText: 'e.g. Leather Jacket + Chinos',
+                  hintText: 'e.g. Leather Jacket & Chinos',
                 ),
               ],
               const SizedBox(height: AppSpacing.xl),

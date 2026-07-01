@@ -60,8 +60,8 @@ class DiscoverScreen extends StatelessWidget {
                       color: AppColors.primary.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                     ),
-                    child: Row(
-                      children: const [
+                    child: const Row(
+                      children: [
                         Icon(Icons.people_alt_outlined, color: AppColors.primary, size: 32),
                         SizedBox(width: 12),
                         Expanded(

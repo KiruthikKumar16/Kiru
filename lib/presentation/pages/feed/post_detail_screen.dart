@@ -213,11 +213,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           filled: true,
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide(color: AppColors.border),
+                            borderSide: const BorderSide(color: AppColors.border),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide(color: AppColors.primary),
+                            borderSide: const BorderSide(color: AppColors.primary),
                           ),
                         ),
                       ),
