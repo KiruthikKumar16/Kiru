@@ -155,19 +155,19 @@ class AppRoutes {
         },
         branches: [
           StatefulShellBranch(
-            routes: [GoRoute(path: home, builder: (context, state) => const HomeScreen())],
+            routes: [GoRoute(path: trips, builder: (context, state) => const TripsScreen())],
           ),
           StatefulShellBranch(
             routes: [GoRoute(path: feed, builder: (context, state) => const FeedScreen())],
           ),
           StatefulShellBranch(
-            routes: [GoRoute(path: trips, builder: (context, state) => const TripsScreen())],
-          ),
-          StatefulShellBranch(
-            routes: [GoRoute(path: wardrobe, builder: (context, state) => const WardrobeScreen())],
+            routes: [GoRoute(path: home, builder: (context, state) => const HomeScreen())],
           ),
           StatefulShellBranch(
             routes: [GoRoute(path: stylist, builder: (context, state) => const AiStylistScreen())],
+          ),
+          StatefulShellBranch(
+            routes: [GoRoute(path: wardrobe, builder: (context, state) => const WardrobeScreen())],
           ),
         ],
       ),

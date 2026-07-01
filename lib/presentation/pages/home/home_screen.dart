@@ -36,27 +36,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            context.push(AppRoutes.createTrip);
+          },
+        ),
         title: const Text('Kiru', style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.person_outline),
             onPressed: () {
               HapticFeedback.lightImpact();
               context.push(AppRoutes.profile);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              context.push(AppRoutes.createTrip);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              context.push(AppRoutes.notifications);
             },
           ),
         ],

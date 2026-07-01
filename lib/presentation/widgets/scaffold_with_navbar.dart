@@ -44,9 +44,9 @@ class ScaffoldWithNavBar extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'Home',
+              icon: Icon(Icons.card_travel_outlined),
+              activeIcon: Icon(Icons.card_travel),
+              label: 'Trips',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.explore_outlined),
@@ -54,19 +54,19 @@ class ScaffoldWithNavBar extends StatelessWidget {
               label: 'Feed',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.card_travel_outlined),
-              activeIcon: Icon(Icons.card_travel),
-              label: 'Trips',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.checkroom_outlined),
-              activeIcon: Icon(Icons.checkroom),
-              label: 'Wardrobe',
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
+              label: 'Home',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.auto_awesome_outlined),
               activeIcon: Icon(Icons.auto_awesome),
               label: 'Stylist',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.checkroom_outlined),
+              activeIcon: Icon(Icons.checkroom),
+              label: 'Wardrobe',
             ),
           ],
         ),
