@@ -6,6 +6,7 @@ import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/routes/app_routes.dart';
 import 'package:kiru/presentation/providers/trip_provider.dart';
+import 'package:kiru/presentation/widgets/app_network_image.dart';
 import 'package:intl/intl.dart';
 
 enum TripFilter { upcoming, past, shared, all }
@@ -172,11 +173,10 @@ class _TripsScreenState extends ConsumerState<TripsScreen> {
                             children: [
                               ClipRRect(
                                 borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
-                                child: Image.network(
-                                  sharedTrip['imageUrl'],
+                                child: AppNetworkImage(
+                                  imageUrl: sharedTrip['imageUrl'],
                                   height: 160,
                                   width: double.infinity,
-                                  fit: BoxFit.cover,
                                 ),
                               ),
                               Padding(
@@ -266,11 +266,10 @@ class _TripsScreenState extends ConsumerState<TripsScreen> {
                           children: [
                             ClipRRect(
                               borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
-                              child: Image.network(
-                                regularTrip.imageUrl,
+                              child: AppNetworkImage(
+                                imageUrl: regularTrip.imageUrl,
                                 height: 160,
                                 width: double.infinity,
-                                fit: BoxFit.cover,
                               ),
                             ),
                             Padding(

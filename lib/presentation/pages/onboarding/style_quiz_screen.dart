@@ -8,6 +8,7 @@ import 'package:kiru/core/routes/app_routes.dart';
 import 'package:kiru/data/models/style_quiz_item.dart';
 import 'package:kiru/presentation/providers/profile_provider.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
+import 'package:kiru/presentation/widgets/app_network_image.dart';
 
 class StyleQuizScreen extends ConsumerStatefulWidget {
   const StyleQuizScreen({super.key});
@@ -266,12 +267,13 @@ class _StyleQuizScreenState extends ConsumerState<StyleQuizScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
-              item.imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
+            AppNetworkImage(
+              imageUrl: item.imageUrl,
+              errorWidget: Container(
                 color: AppColors.surface,
-                child: const Icon(Icons.dry_cleaning, size: 80, color: AppColors.primary),
+                child: const Center(
+                  child: Icon(Icons.dry_cleaning, size: 80, color: AppColors.primary),
+                ),
               ),
             ),
             Positioned(

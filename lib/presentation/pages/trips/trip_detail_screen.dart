@@ -5,6 +5,7 @@ import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/presentation/providers/trip_provider.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
+import 'package:kiru/presentation/widgets/app_network_image.dart';
 import 'package:intl/intl.dart';
 
 class TripDetailScreen extends ConsumerStatefulWidget {
@@ -103,11 +104,10 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            child: Image.network(
-              trip.imageUrl,
+            child: AppNetworkImage(
+              imageUrl: trip.imageUrl,
               height: 200,
               width: double.infinity,
-              fit: BoxFit.cover,
             ),
           ),
           const SizedBox(height: AppSpacing.lg),

@@ -8,6 +8,7 @@ import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
 import 'package:kiru/presentation/providers/app_mock_providers.dart';
+import 'package:kiru/presentation/widgets/app_network_image.dart';
 
 class WardrobeItemDetailScreen extends ConsumerStatefulWidget {
   final String itemId;
@@ -65,11 +66,10 @@ class _WardrobeItemDetailScreenState extends ConsumerState<WardrobeItemDetailScr
                         width: double.infinity,
                         fit: BoxFit.cover,
                       )
-                    : Image.network(
-                        item.imageUrl,
+                    : AppNetworkImage(
+                        imageUrl: item.imageUrl,
                         height: 280,
                         width: double.infinity,
-                        fit: BoxFit.cover,
                       ),
               ),
               const SizedBox(height: AppSpacing.lg),

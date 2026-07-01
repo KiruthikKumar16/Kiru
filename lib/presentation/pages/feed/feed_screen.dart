@@ -6,6 +6,7 @@ import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/routes/app_routes.dart';
 import 'package:kiru/presentation/providers/app_mock_providers.dart';
+import 'package:kiru/presentation/widgets/app_network_image.dart';
 
 class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
@@ -149,10 +150,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                                     borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                                     child: AspectRatio(
                                       aspectRatio: 4 / 5,
-                                      child: Image.network(
-                                        post.imageUrl,
+                                      child: AppNetworkImage(
+                                        imageUrl: post.imageUrl,
                                         width: double.infinity,
-                                        fit: BoxFit.cover,
                                       ),
                                     ),
                                   ),

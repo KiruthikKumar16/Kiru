@@ -7,6 +7,7 @@ import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/routes/app_routes.dart';
 import 'package:kiru/presentation/providers/app_mock_providers.dart';
+import 'package:kiru/presentation/widgets/app_network_image.dart';
 
 class WardrobeScreen extends ConsumerStatefulWidget {
   const WardrobeScreen({super.key});
@@ -238,10 +239,9 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                                   child: ClipRRect(
                                     borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusLg)),
                                     child: item.imageUrl.startsWith('http')
-                                        ? Image.network(
-                                            item.imageUrl,
+                                        ? AppNetworkImage(
+                                            imageUrl: item.imageUrl,
                                             width: double.infinity,
-                                            fit: BoxFit.cover,
                                           )
                                         : Image.file(
                                             File(item.imageUrl),

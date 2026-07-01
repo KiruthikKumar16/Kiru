@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/presentation/providers/app_mock_providers.dart';
+import 'package:kiru/presentation/widgets/app_network_image.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   final String postId;
@@ -78,10 +79,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // Post image
                     ClipRRect(
                       borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                      child: Image.network(
-                        post.imageUrl,
+                      child: AppNetworkImage(
+                        imageUrl: post.imageUrl,
                         width: double.infinity,
-                        fit: BoxFit.cover,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.md),

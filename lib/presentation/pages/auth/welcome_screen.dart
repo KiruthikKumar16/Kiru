@@ -4,6 +4,7 @@ import 'package:kiru/core/constants/app_colors.dart';
 import 'package:kiru/core/constants/app_spacing.dart';
 import 'package:kiru/core/routes/app_routes.dart';
 import 'package:kiru/presentation/widgets/app_button.dart';
+import 'package:kiru/presentation/widgets/app_network_image.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -14,9 +15,8 @@ class WelcomeScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.network(
-            'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1000&auto=format&fit=crop',
-            fit: BoxFit.cover,
+          const AppNetworkImage(
+            imageUrl: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1000&auto=format&fit=crop',
           ),
           Container(
             decoration: BoxDecoration(

@@ -8,6 +8,7 @@ import 'package:kiru/core/routes/app_routes.dart';
 import 'package:kiru/presentation/providers/profile_provider.dart';
 import 'package:kiru/presentation/providers/trip_provider.dart';
 import 'package:kiru/presentation/providers/app_mock_providers.dart';
+import 'package:kiru/presentation/widgets/app_network_image.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -110,11 +111,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
-                                  child: Image.network(
-                                    inspiration.imageUrl,
+                                  child: AppNetworkImage(
+                                    imageUrl: inspiration.imageUrl,
                                     width: 80,
                                     height: double.infinity,
-                                    fit: BoxFit.cover,
                                   ),
                                 ),
                                 const SizedBox(width: AppSpacing.md),
@@ -180,13 +180,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       height: 180,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                        image: DecorationImage(
-                          image: NetworkImage(upcomingTrip.imageUrl),
-                          fit: BoxFit.cover,
-                        ),
                       ),
                       child: Stack(
                         children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                            child: AppNetworkImage(
+                              imageUrl: upcomingTrip.imageUrl,
+                            ),
+                          ),
                           Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
@@ -284,9 +286,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               child: Stack(
                                 children: [
                                   Positioned.fill(
-                                    child: Image.network(
-                                      trip.imageUrl,
-                                      fit: BoxFit.cover,
+                                    child: AppNetworkImage(
+                                      imageUrl: trip.imageUrl,
                                     ),
                                   ),
                                   Positioned.fill(
